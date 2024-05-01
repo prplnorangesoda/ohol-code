@@ -28,10 +28,7 @@
       }
     },
     "ServerStorage": {
-      "$path": "assets/ServerStorage.rbxm",
-      "Weapons": {
-        "$path": "assets/ServerStorage/Weapons"
-      }
+      "$path": "assets/ServerStorage.rbxm"
     },
     "SoundService": {
       "$path": "assets/SoundService.rbxm"
@@ -48,7 +45,13 @@
       }
     },
     "StarterGui": {
-      "$path": "assets/StarterGui.rbxm"
+      "$path": "assets/StarterGui.rbxm",
+      "DeathFade": {
+        "$path": "assets/StarterGui/DeathFade.rbxm"
+      },
+      "GameUI": {
+        "$path": "assets/StarterGui/GameUI.rbxm"
+      }
     },
     "Workspace": {
       "$path": "assets/Workspace.rbxm"
