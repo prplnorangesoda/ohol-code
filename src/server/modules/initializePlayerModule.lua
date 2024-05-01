@@ -24,7 +24,9 @@ initializeModule.initPlayer = function(player: Player)
 	hungerValue.Value = 200
 	hungerValue.Parent = statsFolder
 	hungerValue.Changed:Connect(function(value)
-		if value > 300 then hungerValue.Value = 300 end
+		if value > 300 then
+			hungerValue.Value = 300
+		end
 	end)
 
 	local thirstValue = Instance.new("NumberValue")
@@ -32,7 +34,9 @@ initializeModule.initPlayer = function(player: Player)
 	thirstValue.Value = 350
 	thirstValue.Parent = statsFolder
 	thirstValue.Changed:Connect(function(value)
-		if value > 500 then thirstValue.Value = 500 end
+		if value > 500 then
+			thirstValue.Value = 500
+		end
 	end)
 
 	local playerTickRoutine = coroutine.create(function()
