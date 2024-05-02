@@ -1,5 +1,6 @@
 local TIME_BEFORE_KICK = 60 * 60 -- 60 Minutes in Seconds
 local ServerScriptService = game:GetService("ServerScriptService")
+local Teams = game:GetService("Teams")
 local newTimerModule = require(ServerScriptService.Server.modules.newTimerModule)
 local playerTickModule = require(ServerScriptService.Server.modules.playerTickModule)
 
@@ -8,6 +9,7 @@ local initializeModule = {}
 initializeModule.initPlayer = function(player: Player)
 	local timer = newTimerModule.new(player, TIME_BEFORE_KICK)
 
+	player.Team = Teams.Ingame
 	player:LoadCharacter()
 	local timerRoutine = coroutine.create(function()
 		timer:StartSession()

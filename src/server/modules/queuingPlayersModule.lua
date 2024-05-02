@@ -1,13 +1,18 @@
+local Teams = game:GetService("Teams")
 local queuingPlayersModule = {}
 local queuingPlayers = {}
 
 queuingPlayersModule.addPlayer = function(player: Player)
 	table.insert(queuingPlayers, player)
+	player.Team = Teams.Waiting
+	player:LoadCharacter()
 	return queuingPlayers
 end
 
 queuingPlayersModule.getPlayerToAdd = function(): Player
-	return table.remove(queuingPlayers, 1) or error("Found no player in queuingPlayers")
+	local playerToAdd: Player = table.remove(queuingPlayers, 1) or error("Found no player in queuingPlayers")
+	playerToAdd.Team = Teams.Ingame
+	return playerToAdd
 end
 
 return queuingPlayersModule
