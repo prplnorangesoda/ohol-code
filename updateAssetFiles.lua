@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 local map = remodel.readPlaceFile("ohol-fullymanaged.rbxl")
 
 local SERVICES = { "Workspace" }
