@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - master
+      - partial
   pull_request:
     branches:
       - master
+      - partial
 
 jobs:
   lint:
