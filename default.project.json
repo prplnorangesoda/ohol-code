@@ -1,75 +1,22 @@
 {
-  "name": "ohol-fullymanaged",
+  "name": "ohol-partial",
   "tree": {
     "$className": "DataModel",
-    "Lighting": {
-      "$path": "assets/Lighting.rbxm"
-    },
     "ReplicatedStorage": {
-      "$path": "assets/ReplicatedStorage.rbxm",
       "$ignoreUnknownInstances": true,
-      "Food": {
-        "$path": "assets/ReplicatedStorage/Food.rbxm"
-      },
       "Shared": {
         "$path": "src/shared"
-      },
-      "BasicTree": {
-        "$path": "assets/ReplicatedStorage/BasicTree.rbxm"
       }
     },
-    "LocalizationService": {
-      "$path": "assets/LocalizationService.rbxm"
-    },
-    "Players": {
-      "$path": "assets/Players.rbxm"
-    },
-    "ReplicatedFirst": {
-      "$path": "assets/ReplicatedFirst.rbxm"
-    },
     "ServerScriptService": {
-      "$path": "DataModel/ServerScriptService.rbxm",
       "Server": {
         "$path": "src/server"
       }
     },
-    "ServerStorage": {
-      "$path": "assets/ServerStorage.rbxm"
-    },
-    "SoundService": {
-      "$path": "assets/SoundService.rbxm"
-    },
     "StarterPlayer": {
-      "$path": "assets/StarterPlayer.rbxm",
-      "StarterCharacterScripts": {
-        "$path": "assets/StarterPlayer/StarterCharacterScripts.rbxm"
-      },
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/client"
-        }
-      }
-    },
-    "StarterGui": {
-      "$path": "assets/StarterGui.rbxm",
-      "DeathFade": {
-        "$path": "assets/StarterGui/DeathFade.rbxm"
-      },
-      "GameUI": {
-        "$path": "assets/StarterGui/GameUI.rbxm"
-      }
-    },
-    "Teams": {
-      "$path": "assets/Teams.rbxm"
-    },
-    "Workspace": {
-      "$path": "assets/Workspace.rbxm",
-      "Saved": {
-        "$className": "Folder",
-        "$path": "assets/Workspace/Saved.rbxm",
-        "TreeSpawnpoints": {
-          "$className": "Folder",
-          "$path": "assets/Workspace/TreeSpawnpoints.rbxm"
         }
       }
     }
