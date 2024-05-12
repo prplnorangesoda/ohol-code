@@ -27,6 +27,11 @@ end
 local hasFirstPlayerSpawned = false
 
 Players.PlayerAdded:Connect(function(player)
+	local IsPlaying = Instance.new("BoolValue")
+	IsPlaying.Name = "IsPlaying"
+	IsPlaying.Value = false
+	IsPlaying.Parent = player
+
 	player.CharacterAdded:Connect(onCharacterAdded)
 	player.CharacterRemoving:Connect(onCharacterRemoving)
 

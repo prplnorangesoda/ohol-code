@@ -2,6 +2,10 @@
   "name": "ohol-partial",
   "tree": {
     "$className": "DataModel",
+    "ReplicatedFirst": {
+      "$ignoreUnknownInstances": true,
+      "$path": "src/client/ReplicatedFirst"
+    },
     "ReplicatedStorage": {
       "$ignoreUnknownInstances": true,
       "Shared": {
