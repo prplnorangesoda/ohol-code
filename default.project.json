@@ -57,7 +57,10 @@
       }
     },
     "Workspace": {
-      "$path": "assets/Workspace.rbxm"
+      "$path": "assets/Workspace.rbxm",
+      "BasicTree": {
+        "$path": "assets/Workspace/BasicTree.rbxm"
+      }
     }
   }
 }
