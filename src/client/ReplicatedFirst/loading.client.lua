@@ -1,7 +1,7 @@
 local plr = game:GetService("Players").LocalPlayer
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
-local loadingUI: ScreenGui = script:WaitForChild("ScreenGui"):Clone()
+local loadingUI: ScreenGui = ReplicatedFirst:WaitForChild("LoadingGui")
 
 loadingUI.Parent = plr.PlayerGui
 ReplicatedFirst:RemoveDefaultLoadingScreen()
