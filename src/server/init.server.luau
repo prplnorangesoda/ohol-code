@@ -1,4 +1,4 @@
-print("Hello world, from server! dsdsdss")
+print("Hello world, from server!")
 
 local x = 32
 
