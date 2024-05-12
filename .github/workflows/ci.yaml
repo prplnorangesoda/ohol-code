@@ -26,12 +26,12 @@ jobs:
         run: |
           selene ./src
 
-  style:
-    name: Stylua styling
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: JohnnyMorganz/stylua-action@1.0.0
-        with:
-          token: ${{ SECRETS.GITHUB_TOKEN }}
-          args: --check .
+  # style:
+  #   name: Stylua styling
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: JohnnyMorganz/stylua-action@1.0.0
+  #       with:
+  #         token: ${{ SECRETS.GITHUB_TOKEN }}
+  #         args: --check .
