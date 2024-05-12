@@ -1,0 +1,7 @@
+# Project place file
+/ohol-fullymanaged.rbxlx
+*.rbxl
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
