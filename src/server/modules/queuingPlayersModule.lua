@@ -5,7 +5,6 @@ local queuingPlayers = {}
 queuingPlayersModule.addPlayer = function(player: Player)
 	table.insert(queuingPlayers, player)
 	player.Team = Teams.Waiting
-	player:LoadCharacter()
 	return queuingPlayers
 end
 

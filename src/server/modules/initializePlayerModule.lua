@@ -10,6 +10,7 @@ initializeModule.initPlayer = function(player: Player)
 	local timer = newTimerModule.new(player, TIME_BEFORE_KICK)
 
 	player.Team = Teams.Ingame
+	player:FindFirstChild("IsPlaying").Value = true
 	player:LoadCharacter()
 	local timerRoutine = coroutine.create(function()
 		timer:StartSession()
