@@ -2,8 +2,10 @@
 print("Hello world, from server!")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local TIME_BEFORE_FOOD_SPAWN = 2
+
 local spawnFood = coroutine.create(function()
-	while task.wait(0.5) do
+	while task.wait(TIME_BEFORE_FOOD_SPAWN) do
 		local randVal = math.random(1, 2)
 
 		local foodToClone
