@@ -8,6 +8,9 @@
     "ReplicatedStorage": {
       "$path": "assets/ReplicatedStorage.rbxm",
       "$ignoreUnknownInstances": true,
+      "Food": {
+        "$path": "assets/ReplicatedStorage/Food.rbxm"
+      },
       "Shared": {
         "$path": "src/shared"
       }

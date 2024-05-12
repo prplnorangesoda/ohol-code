@@ -5,14 +5,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local spawnFood = coroutine.create(function()
 	while task.wait(0.5) do
 		local randVal = math.random(1, 2)
-		print(randVal)
 
 		local foodToClone
 
 		if randVal == 1 then
-			foodToClone = ReplicatedStorage.Shared.apple
+			foodToClone = ReplicatedStorage.Food.apple
 		else
-			foodToClone = ReplicatedStorage.Shared["bacon cheeseburger"]
+			foodToClone = ReplicatedStorage.Food["bacon cheeseburger"]
 		end
 
 		local spawnedFood = foodToClone:Clone()
