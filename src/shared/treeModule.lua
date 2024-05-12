@@ -24,14 +24,13 @@ treeModule.createTreeFrom = function(tree: Model, foodType: string)
 
 	local fruitSpawningRoutine = coroutine.create(function() -- Coroutine Vs Task spawn
 		local fruitSpawned = 0
-		while task.wait(2) do
+		while task.wait(math.random(45, 180)) do
 			if fruitSpawned >= 5 then
 				continue
 			end
 			local newFruit: Tool = foodItem:Clone()
 			newFruit.Parent = tree
 			newFruit.PrimaryPart.Anchored = true
-			print(leaves.CFrame + determineSpawningLocationInLeavesRandomly(leaves.Size))
 			newFruit.PrimaryPart:PivotTo(leaves.CFrame + determineSpawningLocationInLeavesRandomly(leaves.Size))
 		end
 	end)

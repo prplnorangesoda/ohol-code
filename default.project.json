@@ -13,6 +13,9 @@
       },
       "Shared": {
         "$path": "src/shared"
+      },
+      "BasicTree": {
+        "$path": "assets/ReplicatedStorage/BasicTree.rbxm"
       }
     },
     "LocalizationService": {
@@ -56,10 +59,18 @@
         "$path": "assets/StarterGui/GameUI.rbxm"
       }
     },
+    "Teams": {
+      "$path": "assets/Teams.rbxm"
+    },
     "Workspace": {
       "$path": "assets/Workspace.rbxm",
-      "BasicTree": {
-        "$path": "assets/Workspace/BasicTree.rbxm"
+      "Saved": {
+        "$className": "Folder",
+        "$path": "assets/Workspace/Saved.rbxm",
+        "TreeSpawnpoints": {
+          "$className": "Folder",
+          "$path": "assets/Workspace/TreeSpawnpoints.rbxm"
+        }
       }
     }
   }
