@@ -4,13 +4,17 @@ local newTimerModule = require(ServerScriptService.Server.modules.newTimerModule
 local queuingPlayersModule = require(ServerScriptService.Server.modules.queuingPlayersModule)
 local initializeModule = require(ServerScriptService.Server.modules.initializePlayerModule)
 
-
 local function onCharacterAdded(character: Model)
 	local humanoid: Humanoid = character:WaitForChild("Humanoid")
 	humanoid.Died:Connect(function()
 		local player = Players:GetPlayerFromCharacter(character)
-		if player == nil then return end
-		newTimerModule.findModuleFromPlayerID(player.UserId):KickEarly()
+		if player == nil then
+			return
+		end
+		while task.wait(5) do
+			newTimerModule.findModuleFromPlayerID(player.UserId):KickEarly()
+			break
+		end
 	end)
 
 	print(character, " has spawned")
