@@ -2,71 +2,56 @@
   "name": "ohol-fullymanaged",
   "tree": {
     "$className": "DataModel",
-
+    "Lighting": {
+      "$path": "assets/Lighting.rbxm"
+    },
     "ReplicatedStorage": {
+      "$path": "assets/ReplicatedStorage.rbxm",
+      "$ignoreUnknownInstances": true,
       "Shared": {
         "$path": "src/shared"
       }
     },
-
+    "LocalizationService": {
+      "$path": "assets/LocalizationService.rbxm"
+    },
+    "Players": {
+      "$path": "assets/Players.rbxm"
+    },
+    "ReplicatedFirst": {
+      "$path": "assets/ReplicatedFirst.rbxm"
+    },
     "ServerScriptService": {
+      "$path": "DataModel/ServerScriptService.rbxm",
       "Server": {
         "$path": "src/server"
       }
     },
-
+    "ServerStorage": {
+      "$path": "assets/ServerStorage.rbxm",
+      "Weapons": {
+        "$path": "assets/ServerStorage/Weapons"
+      }
+    },
+    "SoundService": {
+      "$path": "assets/SoundService.rbxm"
+    },
     "StarterPlayer": {
+      "$path": "assets/StarterPlayer.rbxm",
+      "StarterCharacterScripts": {
+        "$path": "assets/StarterPlayer/StarterCharacterScripts.rbxm"
+      },
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/client"
         }
       }
     },
-
+    "StarterGui": {
+      "$path": "assets/StarterGui.rbxm"
+    },
     "Workspace": {
-      "$properties": {
-        "FilteringEnabled": true
-      },
-      "Baseplate": {
-        "$className": "Part",
-        "$properties": {
-          "Anchored": true,
-          "Color": [
-            0.38823,
-            0.37254,
-            0.38823
-          ],
-          "Locked": true,
-          "Position": [
-            0,
-            -10,
-            0
-          ],
-          "Size": [
-            512,
-            20,
-            512
-          ]
-        }
-      }
-    },
-    "Lighting": {
-      "$properties": {
-        "Ambient": [
-          0,
-          0,
-          0
-        ],
-        "Brightness": 2,
-        "GlobalShadows": true,
-        "Outlines": false,
-        "Technology": "Voxel"
-      }
-    },
-    "SoundService": {
-      "$properties": {
-        "RespectFilteringEnabled": true
-      }
+      "$path": "assets/Workspace.rbxm"
     }
   }
 }
