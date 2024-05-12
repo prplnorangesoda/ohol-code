@@ -11,7 +11,7 @@ babyEvent.OnServerEvent:Connect(function(player)
 	if babyRequestDebounce then
 		return
 	end
-	if not player.PlayerStats.Hunger.Value >= 150 and player.PlayerStats.Thirst.Value >= 250 then
+	if player.PlayerStats.Hunger.Value < 150 or player.PlayerStats.Thirst.Value < 250 then
 		return
 	end
 
