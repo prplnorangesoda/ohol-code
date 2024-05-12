@@ -1,6 +1,8 @@
 {
 	"[lua]": {
 		"editor.defaultFormatter": "JohnnyMorganz.stylua"
-		
-	}
+	},
+	"robloxLsp.diagnostics.globals": [
+		"remodel"
+	]
 }
