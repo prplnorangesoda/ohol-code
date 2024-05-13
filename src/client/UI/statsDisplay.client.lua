@@ -1,4 +1,6 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local versionModule = require(ReplicatedStorage.Shared.gameVersion)
 local function normalizeToRange(value, min, max)
 	return (value - min) / (max - min)
 end
@@ -10,7 +12,6 @@ end
 local function normalizeHunger(value)
 	return normalizeToRange(value, 0, 300)
 end
-
 
 -- debug
 -- print(normalizeHunger(0),normalizeHunger(50),normalizeHunger(150))
@@ -37,5 +38,6 @@ hungerValue.Changed:Connect(function(value)
 	HungerValueElement.Size = UDim2.fromScale(normalizeHunger(value), 1)
 end)
 
+local versionText: TextLabel = gui.GameUI.VersionLabel
 
-
+versionText.Text = "v" .. versionModule.VERSION

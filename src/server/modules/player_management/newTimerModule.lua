@@ -1,12 +1,10 @@
-local ServerScriptService = game:GetService("ServerScriptService")
-local kickPlayer = require(ServerScriptService.Server.modules.kickModule).kick
+local kickPlayer = require(script.Parent.kickModule).kick
 -- redoing this
 local innerTimerModule = {
 	Player = nil,
-	TimeIntVal = nil
+	TimeIntVal = nil,
 }
 local playerTimerModulePairs = {}
-
 
 function innerTimerModule:StartSession()
 	print("timer session started", self.Player, self.TimeIntVal)
@@ -24,7 +22,6 @@ end
 function innerTimerModule:KickEarly()
 	kickPlayer(self.Player)
 end
-
 
 local TimerModule = {}
 
@@ -51,8 +48,5 @@ end
 TimerModule.findModuleFromPlayerID = function(playerID: number)
 	return playerTimerModulePairs[playerID]
 end
-
-
-
 
 return TimerModule

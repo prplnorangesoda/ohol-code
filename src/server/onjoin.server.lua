@@ -1,8 +1,9 @@
 local Players = game:GetService("Players")
-local ServerScriptService = game:GetService("ServerScriptService")
-local newTimerModule = require(ServerScriptService.Server.modules.newTimerModule)
-local queuingPlayersModule = require(ServerScriptService.Server.modules.queuingPlayersModule)
-local initializeModule = require(ServerScriptService.Server.modules.initializePlayerModule)
+local ROJOSCRIPTS = game:GetService("ServerScriptService").Server
+local newTimerModule = require(ROJOSCRIPTS.modules.player_management.newTimerModule)
+local queuingPlayersModule = require(ROJOSCRIPTS.modules.player_management.queuingPlayersModule)
+local initializeModule = require(ROJOSCRIPTS.modules.player_management.initializePlayerModule)
+local loadstateModule = require(ROJOSCRIPTS.modules.loadstate)
 
 local function onCharacterAdded(character: Model)
 	local humanoid: Humanoid = character:WaitForChild("Humanoid")
@@ -35,6 +36,9 @@ Players.PlayerAdded:Connect(function(player)
 	player.CharacterAdded:Connect(onCharacterAdded)
 	player.CharacterRemoving:Connect(onCharacterRemoving)
 
+	if not loadstateModule.isServerLoaded() then
+		loadstateModule.serverLoaded.Event:Wait()
+	end
 	if not hasFirstPlayerSpawned then
 		hasFirstPlayerSpawned = true
 		print("loading First player")
