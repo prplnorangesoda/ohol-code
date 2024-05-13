@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 local worldgenModule = {}
 
@@ -34,6 +35,9 @@ local AMPLITUDE = 2
 local INITIAL_SIZE = 5
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
+
+local SEA_LEVEL = 15
+
 local generatingThread
 
 local biomeBlocks: { [string]: Part } = {
@@ -42,6 +46,7 @@ local biomeBlocks: { [string]: Part } = {
 	["snow"] = ServerStorage:WaitForChild("SnowPart"),
 	["rock"] = ServerStorage:WaitForChild("RockPart"),
 	["wet"] = ServerStorage:WaitForChild("WetPart"),
+	["water"] = ServerStorage:WaitForChild("Water"),
 }
 
 local function getRelativeHeight(x, z)
@@ -50,13 +55,21 @@ local function getRelativeHeight(x, z)
 	end
 	local noise = math.noise(x * SMOOTH, z * SMOOTH, HEIGHT_SEED)
 
+	-- force a lower end to avoid holes caused by NaN Y
+	if noise < -0.5 then
+		noise = -0.5
+	end
 	--- bias towards the lower ends of noise.
 	-- @see https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
 
 	-- add 0.5 to put value between 0 to 1
-	noise = math.pow(noise + 0.5, 3)
+	noise = math.pow((noise + 0.5) * 1.3 --[[fudge factor]], 2.5)
 
 	return noise
+end
+
+local function getBlockHeight(x, z)
+	return math.floor(getRelativeHeight(x, z) * (50 * AMPLITUDE))
 end
 
 ---Get the moisture for a 2D position using the moisture noisemap.
@@ -83,32 +96,52 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 	local chunkFolder = Instance.new("Folder")
 	chunkFolder.Name = "chunk" .. xChunkCoord .. " " .. zChunkCoord
 	chunkFolder.Parent = worldgenFolder
-
 	for i = 1, CHUNK_SIZE do
 		local realX = i + (CHUNK_SIZE * xChunkCoord)
 		for j = 1, CHUNK_SIZE do
 			local realZ = j + (CHUNK_SIZE * zChunkCoord)
 
-			local height = getRelativeHeight(realX, realZ)
 			local moisture = getMoisture(realX, realZ)
-			local blockHeight = math.floor(height * (50 * AMPLITUDE))
+			local blockHeight = getBlockHeight(realX, realZ)
 			local block
 			if moisture == "HIGH" and blockHeight < 50 then
 				block = biomeBlocks.wet:Clone()
-			elseif moisture == "MEDIUM" and blockHeight < 50 then
-				block = biomeBlocks.grass:Clone()
+			elseif blockHeight <= SEA_LEVEL + 10 then
+				block = biomeBlocks.dead:Clone()
 			elseif blockHeight >= 90 and (moisture == "MEDIUM" or moisture == "HIGH") then
 				block = biomeBlocks.snow:Clone()
 			elseif blockHeight >= 50 then
 				block = biomeBlocks.rock:Clone()
 			else
-				block = biomeBlocks.dead:Clone()
+				block = biomeBlocks.grass:Clone()
 			end
-
-			block.Parent = chunkFolder
+			block.Name = i .. " " .. j
 			block.CFrame = CFrame.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE)
+			block.Parent = chunkFolder
+
+			if block.CFrame.Y < -500 then
+				print(blockHeight, i, j, math.noise(realX * SMOOTH, realZ * SMOOTH, HEIGHT_SEED))
+			end
 		end
 	end
+
+	-- if #waterBlocksInChunk ~= 0 then
+	-- 	print(waterBlocksInChunk)
+	-- 	local part = table.remove(waterBlocksInChunk, 1)
+	-- 	local success, unionedWater: UnionOperation = pcall(function()
+	-- 		return part:UnionAsync(waterBlocksInChunk)
+	-- 	end)
+	-- 	if success and unionedWater then
+	-- 		unionedWater.Position = part.Position
+	-- 		unionedWater.Parent = chunkFolder
+	-- 		part:Destroy()
+	-- 		for _, block in pairs(waterBlocksInChunk) do
+	-- 			block:Destroy()
+	-- 		end
+	-- 	else
+	-- 		print(unionedWater)
+	-- 	end
+	-- end
 end
 --- Generates procgen terrain with the set seed.
 --- Requires `worldgenModule.setSeed` to be run first.
@@ -123,9 +156,11 @@ function worldgenModule.drawInitialTerrain()
 		for i = -INITIAL_SIZE, INITIAL_SIZE do
 			for j = -INITIAL_SIZE, INITIAL_SIZE do
 				task.spawn(worldgenModule.generateChunk, i, j)
-				task.wait()
 			end
 		end
+		local water: Part = workspace.Swimmable.Water
+		water.CFrame = CFrame.new(0, SEA_LEVEL + 0.8, 0)
+
 		worldCurrentlyGenerated = true
 		worldgenModule.initialWorldGenerated:Fire()
 		worldgenModule.isInitialWorldGenerated = true

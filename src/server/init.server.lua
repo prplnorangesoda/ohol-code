@@ -1,4 +1,3 @@
--- init.server = ServerScriptService.Server
 print("Hello world, from server!")
 local ROJOSCRIPTS = game:GetService("ServerScriptService").Server
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

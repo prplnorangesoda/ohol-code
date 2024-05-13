@@ -29,7 +29,7 @@ LoadingGui.Destroying:Once(function()
 		isPlaying.Changed:Wait()
 	end
 	WaitingToPlayText.Visible = false
-	plr.PlayerGui.GameUI.Enabled = true
+	plr.PlayerGui:WaitForChild("GameUI").Enabled = true
 	local waitingUIfadeout = TweenService:Create(wholeUI, TweenInfo.new(0.5), { GroupTransparency = 1 })
 	waitingUIfadeout:Play()
 end)
