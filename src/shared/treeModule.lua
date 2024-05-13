@@ -45,6 +45,5 @@ treeModule.createTreeFrom = function(tree: Model, foodType: string)
 		end
 	end)
 	coroutine.resume(fruitSpawningRoutine)
-	print(trunk, leaves, foodType)
 end
 return treeModule

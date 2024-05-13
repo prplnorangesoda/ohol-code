@@ -1,7 +1,7 @@
-local ServerScriptService = game:GetService("ServerScriptService")
+local ROJOSCRIPTS = game:GetService("ServerScriptService").Server
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local queuingPlayersModule = require(ServerScriptService.Server.modules.queuingPlayersModule)
-local initializeModule = require(ServerScriptService.Server.modules.initializePlayerModule)
+local queuingPlayersModule = require(ROJOSCRIPTS.modules.player_management.queuingPlayersModule)
+local initializeModule = require(ROJOSCRIPTS.modules.player_management.initializePlayerModule)
 
 local remoteEvents: Folder = ReplicatedStorage.Shared.remotes
 

@@ -1,7 +1,8 @@
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Flags = require(ReplicatedStorage.Shared.gameFlags)
 
-if (not RunService:IsStudio()) or not ReplicatedStorage.GAMEFLAGS.Debug.Value then
+if (not RunService:IsStudio()) or not Flags.getFlag("Debug") then
 	print("Not initializing debug UI")
 	return
 end

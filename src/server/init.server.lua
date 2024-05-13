@@ -2,6 +2,7 @@
 print("Hello world, from server!")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Flags = require(ReplicatedStorage.Shared.gameFlags)
 
 local TIME_BEFORE_FOOD_SPAWN = 2
 local function foodDebugSpawner()
@@ -22,7 +23,7 @@ local function foodDebugSpawner()
 	end
 end
 
-if RunService:IsStudio() then
+if RunService:IsStudio() and Flags.getFlag("Debug") then
 	task.spawn(foodDebugSpawner)
 end
 

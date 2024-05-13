@@ -1,8 +1,8 @@
 local Players = game:GetService("Players")
-local ServerScriptService = game:GetService("ServerScriptService")
-local newTimerModule = require(ServerScriptService.Server.modules.player_management.newTimerModule)
-local queuingPlayersModule = require(ServerScriptService.Server.modules.player_management.queuingPlayersModule)
-local initializeModule = require(ServerScriptService.Server.modules.player_management.initializePlayerModule)
+local ROJOSCRIPTS = game:GetService("ServerScriptService").Server
+local newTimerModule = require(ROJOSCRIPTS.modules.player_management.newTimerModule)
+local queuingPlayersModule = require(ROJOSCRIPTS.modules.player_management.queuingPlayersModule)
+local initializeModule = require(ROJOSCRIPTS.modules.player_management.initializePlayerModule)
 
 local function onCharacterAdded(character: Model)
 	local humanoid: Humanoid = character:WaitForChild("Humanoid")

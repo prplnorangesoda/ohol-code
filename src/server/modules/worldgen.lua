@@ -23,9 +23,15 @@ end
 
 -- 0 = perfect smooth
 -- up to 1 = more aggressive
-local SMOOTH = 0.05
+local SMOOTH = 0.02
+local BIOME_SMOOTH = 0.05
 
-local SIZE = 100
+local AMPLITUDE = 2
+
+local SIZE = 1000
+local CHUNK_SIZE = 32
+local BLOCK_SIZE = 8
+local generatingThread
 
 local biomeBlocks: { Part } = {
 	["grass"] = ServerStorage:WaitForChild("BasicPart"),
@@ -42,7 +48,7 @@ local function getRelativeHeight(x, z)
 	-- @see https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
 
 	-- add 0.5 to put value between 0 to 1
-	noise = math.pow(noise + 0.5, 2)
+	noise = math.pow(noise + 0.5, 3)
 
 	return noise
 end
@@ -55,7 +61,7 @@ local function getMoisture(x, z): string
 	if not seedSet then
 		error("Seed not set")
 	end
-	local noise = math.noise(x * SMOOTH, z * SMOOTH, MOISTURE_SEED)
+	local noise = math.noise(x * BIOME_SMOOTH, z * BIOME_SMOOTH, MOISTURE_SEED)
 	noise += 0.5 -- get a value between 0-1
 
 	if noise >= 0.3 then
@@ -65,6 +71,32 @@ local function getMoisture(x, z): string
 	end
 end
 
+local function generateChunk(xChunkCoord: number, zChunkCoord: number)
+	local chunkFolder = Instance.new("Folder")
+	chunkFolder.Name = "chunk" .. xChunkCoord .. " " .. zChunkCoord
+	chunkFolder.Parent = worldgenFolder
+
+	for i = 1, CHUNK_SIZE do
+		local realX = i + (CHUNK_SIZE * xChunkCoord)
+		for j = 1, CHUNK_SIZE do
+			local realZ = j + (CHUNK_SIZE * zChunkCoord)
+
+			local height = getRelativeHeight(realX, realZ)
+			local moisture = getMoisture(realX, realZ)
+			local blockHeight = math.floor(height * (50 * AMPLITUDE))
+			local block
+			if moisture == "HIGH" then
+				block = biomeBlocks.grass:Clone()
+			else
+				block = biomeBlocks.dead:Clone()
+			end
+
+			block.Parent = chunkFolder
+			-- a bit complicated: set the position to x|z - SIZE / 2 in order to center the map. This means that the true origin is the bottom right.
+			block.CFrame = CFrame.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE)
+		end
+	end
+end
 --- Generates procgen terrain with the set seed.
 --- Requires `worldgenModule.setSeed` to be run first.
 function worldgenModule.drawTerrain()
@@ -74,27 +106,38 @@ function worldgenModule.drawTerrain()
 	if worldCurrentlyGenerated then
 		warn("World is already generated. Possible double run?")
 	end
-	for i = 1, SIZE do
-		for j = 1, SIZE do
-			local height = getRelativeHeight(i, j)
-			local moisture = getMoisture(i, j)
-			local blockHeight = math.floor(height * 16)
-			local block
-			if moisture == "HIGH" then
-				block = biomeBlocks.grass:Clone()
-			else
-				block = biomeBlocks.dead:Clone()
-			end
+	generatingThread = task.spawn(function()
+		for i = 1, SIZE do
+			for j = 1, SIZE do
+				task.spawn(generateChunk, i, j)
+				task.wait(1)
+				-- task.spawn(function()
+				-- 	local height = getRelativeHeight(i, j)
+				-- 	local moisture = getMoisture(i, j)
+				-- 	local blockHeight = math.floor(height * (50 * AMPLITUDE))
+				-- 	local block
+				-- 	if moisture == "HIGH" then
+				-- 		block = biomeBlocks.grass:Clone()
+				-- 	else
+				-- 		block = biomeBlocks.dead:Clone()
+				-- 	end
 
-			block.Parent = worldgenFolder
-			block.CFrame = CFrame.new(i * 4, blockHeight, j * 4)
+				-- 	block.Parent = worldgenFolder
+				-- 	-- a bit complicated: set the position to x|z - SIZE / 2 in order to center the map. This means that the true origin is the bottom right.
+				-- 	block.CFrame = CFrame.new((i - SIZE / 2) * BLOCK_SIZE, blockHeight, (j - SIZE / 2) * BLOCK_SIZE)
+				-- end)
+			end
 		end
-	end
-	worldCurrentlyGenerated = true
+		worldCurrentlyGenerated = true
+	end)
 end
 
 --- Clear all generated terrain.
 function worldgenModule.clearTerrain()
+	-- Halt terrain generation
+	if generatingThread then
+		task.cancel(generatingThread)
+	end
 	worldgenFolder:ClearAllChildren()
 	worldCurrentlyGenerated = false
 end

@@ -1,6 +1,8 @@
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-if (not RunService:IsStudio()) or ReplicatedStorage.GAMEFLAGS.Debug.Value then
+local Flags = require(ReplicatedStorage.Shared.gameFlags)
+
+if (not RunService:IsStudio()) or not Flags.getFlag("Debug") then
 	print("Not registering debug event handlers")
 	return
 end
