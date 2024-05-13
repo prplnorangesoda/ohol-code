@@ -1,8 +1,10 @@
 -- init.server = ServerScriptService.Server
 print("Hello world, from server!")
+local ROJOSCRIPTS = game:GetService("ServerScriptService").Server
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Flags = require(ReplicatedStorage.Shared.gameFlags)
+local worldgenModule = require(ROJOSCRIPTS.modules.worldgen)
 
 local TIME_BEFORE_FOOD_SPAWN = 2
 local function foodDebugSpawner()
@@ -25,6 +27,12 @@ end
 
 if RunService:IsStudio() and Flags.getFlag("FoodGen") then
 	task.spawn(foodDebugSpawner)
+end
+
+worldgenModule.setSeed()
+
+if not (RunService:IsStudio() and Flags.getFlag("Debug")) then
+	worldgenModule.drawInitialTerrain()
 end
 
 -- spawn trees

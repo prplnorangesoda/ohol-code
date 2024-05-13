@@ -6,6 +6,9 @@ local worldgenFolder: Folder = workspace:WaitForChild("procgen")
 local BASE_SEED, HEIGHT_SEED, MOISTURE_SEED
 local seedSet, worldCurrentlyGenerated = false, false
 
+worldgenModule.initialWorldGenerated = Instance.new("BindableEvent")
+worldgenModule.isInitialWorldGenerated = false
+
 ---Set the seed used by the world generator.
 ---@param seed number|nil The seed to set. If left blank, will be randomly generated.
 function worldgenModule.setSeed(seed)
@@ -24,11 +27,11 @@ end
 -- 0 = perfect smooth
 -- up to 1 = more aggressive
 local SMOOTH = 0.02
-local BIOME_SMOOTH = 0.05
+local BIOME_SMOOTH = 0.02
 
 local AMPLITUDE = 2
 
-local SIZE = 20
+local INITIAL_SIZE = 5
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
 local generatingThread
@@ -71,7 +74,7 @@ local function getMoisture(x, z): string
 	end
 end
 
-local function generateChunk(xChunkCoord: number, zChunkCoord: number)
+function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 	local chunkFolder = Instance.new("Folder")
 	chunkFolder.Name = "chunk" .. xChunkCoord .. " " .. zChunkCoord
 	chunkFolder.Parent = worldgenFolder
@@ -92,14 +95,13 @@ local function generateChunk(xChunkCoord: number, zChunkCoord: number)
 			end
 
 			block.Parent = chunkFolder
-			-- a bit complicated: set the position to x|z - SIZE / 2 in order to center the map. This means that the true origin is the bottom right.
 			block.CFrame = CFrame.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE)
 		end
 	end
 end
 --- Generates procgen terrain with the set seed.
 --- Requires `worldgenModule.setSeed` to be run first.
-function worldgenModule.drawTerrain()
+function worldgenModule.drawInitialTerrain()
 	if not seedSet then
 		error("Seed not set")
 	end
@@ -107,13 +109,15 @@ function worldgenModule.drawTerrain()
 		warn("World is already generated. Possible double run?")
 	end
 	generatingThread = task.spawn(function()
-		for i = 1, SIZE do
-			for j = 1, SIZE do
-				task.spawn(generateChunk, i, j)
+		for i = -INITIAL_SIZE, INITIAL_SIZE do
+			for j = -INITIAL_SIZE, INITIAL_SIZE do
+				task.spawn(worldgenModule.generateChunk, i, j)
 				task.wait()
 			end
 		end
 		worldCurrentlyGenerated = true
+		worldgenModule.initialWorldGenerated:Fire()
+		worldgenModule.isInitialWorldGenerated = true
 	end)
 end
 

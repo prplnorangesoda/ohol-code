@@ -15,6 +15,7 @@ if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 -- fade in the loading bar
@@ -38,12 +39,8 @@ for index, asset in ipairs(assets) do
 end
 print("loading ended")
 -- loading done
--- transition to waiting state now since everything is loaded
+plr.PlayerGui:WaitForChild("WaitingUI").Enabled = true
+task.wait(0.5)
 
--- wait until we can play
-repeat
-	task.wait(0.5)
-until plr:FindFirstChild("IsPlaying").Value
-
-plr.PlayerGui:WaitForChild("GameUI").Enabled = true
+-- transition to waiting state
 loadingUI:Destroy()

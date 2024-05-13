@@ -19,7 +19,7 @@ debugEvents.number.SetWorldGenSeed.OnServerEvent:Connect(function(player, seed: 
 end)
 debugEvents.GenWorld.OnServerEvent:Connect(function(player)
 	print(player, "requested terrain generation")
-	worldgenModule.drawTerrain()
+	worldgenModule.drawInitialTerrain()
 end)
 debugEvents.ClearWorldGen.OnServerEvent:Connect(function(player)
 	print(player, "requested terrain clear")
