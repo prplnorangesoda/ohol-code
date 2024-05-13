@@ -1,7 +1,23 @@
 local ServerStorage = game:GetService("ServerStorage")
+local worldgenModule = {}
 
-local HEIGHT_SEED = 12
-local MOISTURE_SEED = 30
+local worldgenFolder: Folder = workspace:WaitForChild("procgen")
+
+local BASE_SEED, HEIGHT_SEED, MOISTURE_SEED
+local seedSet, worldCurrentlyGenerated = false, false
+
+function worldgenModule.setSeed(seed: number | nil)
+	if seed == nil then
+		BASE_SEED = math.random(1, 1e9)
+	else
+		BASE_SEED = seed
+	end
+	HEIGHT_SEED = BASE_SEED
+	MOISTURE_SEED = (HEIGHT_SEED + 30) / 4
+
+	seedSet = true
+	print("SERVER SEED SET:", BASE_SEED)
+end
 
 -- 0 = perfect smooth
 -- up to 1 = more aggressive
@@ -15,6 +31,9 @@ local biomeBlocks: { Part } = {
 }
 
 local function getRelativeHeight(x, z)
+	if not seedSet then
+		error("Seed not set")
+	end
 	local noise = math.noise(x * SMOOTH, z * SMOOTH, HEIGHT_SEED)
 
 	-- bias towards the lower ends of noise. see: https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
@@ -25,17 +44,26 @@ local function getRelativeHeight(x, z)
 end
 
 local function getMoisture(x, z): string
+	if not seedSet then
+		error("Seed not set")
+	end
 	local noise = math.noise(x * SMOOTH, z * SMOOTH, MOISTURE_SEED)
 	noise += 0.5 -- get a value between 0-1
 
-	if noise >= 0.5 then
+	if noise >= 0.3 then
 		return "HIGH"
 	else
 		return "LOW"
 	end
 end
 
-local function drawTerrain()
+function worldgenModule.drawTerrain()
+	if not seedSet then
+		error("Seed not set")
+	end
+	if worldCurrentlyGenerated then
+		warn("World is already generated. Possible double run?")
+	end
 	for i = 1, SIZE do
 		for j = 1, SIZE do
 			local height = getRelativeHeight(i, j)
@@ -48,10 +76,16 @@ local function drawTerrain()
 				block = biomeBlocks.dead:Clone()
 			end
 
-			block.Parent = workspace.procgen
+			block.Parent = worldgenFolder
 			block.CFrame = CFrame.new(i * 4, blockHeight, j * 4)
 		end
 	end
+	worldCurrentlyGenerated = true
 end
 
-drawTerrain()
+function worldgenModule.clearTerrain()
+	worldgenFolder:ClearAllChildren()
+	worldCurrentlyGenerated = false
+end
+
+return worldgenModule
