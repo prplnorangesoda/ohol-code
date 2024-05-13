@@ -28,7 +28,7 @@ local BIOME_SMOOTH = 0.05
 
 local AMPLITUDE = 2
 
-local SIZE = 1000
+local SIZE = 100
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
 local generatingThread
@@ -110,7 +110,7 @@ function worldgenModule.drawTerrain()
 		for i = 1, SIZE do
 			for j = 1, SIZE do
 				task.spawn(generateChunk, i, j)
-				task.wait(1)
+				task.wait(0.1)
 				-- task.spawn(function()
 				-- 	local height = getRelativeHeight(i, j)
 				-- 	local moisture = getMoisture(i, j)
