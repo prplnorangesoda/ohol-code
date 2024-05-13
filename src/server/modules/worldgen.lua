@@ -6,7 +6,9 @@ local worldgenFolder: Folder = workspace:WaitForChild("procgen")
 local BASE_SEED, HEIGHT_SEED, MOISTURE_SEED
 local seedSet, worldCurrentlyGenerated = false, false
 
-function worldgenModule.setSeed(seed: number | nil)
+---Set the seed used by the world generator.
+---@param seed number|nil The seed to set. If left blank, will be randomly generated.
+function worldgenModule.setSeed(seed)
 	if seed == nil then
 		BASE_SEED = math.random(1, 1e9)
 	else
@@ -36,13 +38,19 @@ local function getRelativeHeight(x, z)
 	end
 	local noise = math.noise(x * SMOOTH, z * SMOOTH, HEIGHT_SEED)
 
-	-- bias towards the lower ends of noise. see: https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
+	--- bias towards the lower ends of noise.
+	-- @see https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
+
 	-- add 0.5 to put value between 0 to 1
 	noise = math.pow(noise + 0.5, 2)
 
 	return noise
 end
 
+---Get the moisture for a 2D position using the moisture noisemap.
+---@param x number X coordinate
+---@param z number Z coordinate
+---@return string
 local function getMoisture(x, z): string
 	if not seedSet then
 		error("Seed not set")
@@ -57,6 +65,8 @@ local function getMoisture(x, z): string
 	end
 end
 
+--- Generates procgen terrain with the set seed.
+--- Requires `worldgenModule.setSeed` to be run first.
 function worldgenModule.drawTerrain()
 	if not seedSet then
 		error("Seed not set")
@@ -83,6 +93,7 @@ function worldgenModule.drawTerrain()
 	worldCurrentlyGenerated = true
 end
 
+--- Clear all generated terrain.
 function worldgenModule.clearTerrain()
 	worldgenFolder:ClearAllChildren()
 	worldCurrentlyGenerated = false
