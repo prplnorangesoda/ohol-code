@@ -1,8 +1,7 @@
 local TIME_BEFORE_KICK = 60 * 60 -- 60 Minutes in Seconds
-local ServerScriptService = game:GetService("ServerScriptService")
 local Teams = game:GetService("Teams")
-local newTimerModule = require(ServerScriptService.Server.modules.newTimerModule)
-local playerTickModule = require(ServerScriptService.Server.modules.playerTickModule)
+local newTimerModule = require(script.Parent.newTimerModule)
+local playerTickModule = require(script.Parent.playerTickModule)
 
 local initializeModule = {}
 

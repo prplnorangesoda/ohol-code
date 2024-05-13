@@ -1,17 +1,17 @@
 local RunService = game:GetService("RunService")
-if not RunService:IsStudio() then
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+if (not RunService:IsStudio()) or ReplicatedStorage.GAMEFLAGS.Debug.Value then
 	print("Not registering debug event handlers")
 	return
 end
 
 print("Is Studio, registering debug event handlers")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local worldgenModule = require(ServerScriptService.Server.modules.worldgen)
 local debugEvents = ReplicatedStorage.Shared.remotes.debug
 
-debugEvents.SetWorldGenSeed.OnServerEvent:Connect(function(player, seed: number | nil)
+debugEvents.number.SetWorldGenSeed.OnServerEvent:Connect(function(player, seed: number | nil)
 	print(player, "requested seed", seed)
 	worldgenModule.setSeed(seed)
 end)
