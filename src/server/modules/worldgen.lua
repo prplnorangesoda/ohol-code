@@ -28,7 +28,7 @@ local BIOME_SMOOTH = 0.05
 
 local AMPLITUDE = 2
 
-local SIZE = 100
+local SIZE = 20
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
 local generatingThread
@@ -110,22 +110,7 @@ function worldgenModule.drawTerrain()
 		for i = 1, SIZE do
 			for j = 1, SIZE do
 				task.spawn(generateChunk, i, j)
-				task.wait(0.1)
-				-- task.spawn(function()
-				-- 	local height = getRelativeHeight(i, j)
-				-- 	local moisture = getMoisture(i, j)
-				-- 	local blockHeight = math.floor(height * (50 * AMPLITUDE))
-				-- 	local block
-				-- 	if moisture == "HIGH" then
-				-- 		block = biomeBlocks.grass:Clone()
-				-- 	else
-				-- 		block = biomeBlocks.dead:Clone()
-				-- 	end
-
-				-- 	block.Parent = worldgenFolder
-				-- 	-- a bit complicated: set the position to x|z - SIZE / 2 in order to center the map. This means that the true origin is the bottom right.
-				-- 	block.CFrame = CFrame.new((i - SIZE / 2) * BLOCK_SIZE, blockHeight, (j - SIZE / 2) * BLOCK_SIZE)
-				-- end)
+				task.wait()
 			end
 		end
 		worldCurrentlyGenerated = true

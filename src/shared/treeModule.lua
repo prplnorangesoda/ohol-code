@@ -11,7 +11,6 @@ local function determineSpawningLocationInLeavesRandomly(leavesSize: Vector3)
 end
 
 treeModule.createTreeFrom = function(tree: Model, foodType: string)
-	local trunk: Part = tree["Trunk"] or error("No trunk in" .. tree)
 	local leaves: Part = tree["Leaves"] or error("No leaves in" .. tree)
 	local proxPrompt: ProximityPrompt = tree.Trunk.TreeShakePrompt or error("No proximity prompt found in" .. tree)
 

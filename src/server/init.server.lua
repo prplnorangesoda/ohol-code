@@ -23,7 +23,7 @@ local function foodDebugSpawner()
 	end
 end
 
-if RunService:IsStudio() and Flags.getFlag("Debug") then
+if RunService:IsStudio() and Flags.getFlag("FoodGen") then
 	task.spawn(foodDebugSpawner)
 end
 

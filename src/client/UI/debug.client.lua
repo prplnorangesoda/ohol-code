@@ -10,6 +10,7 @@ print("initializing debug UI")
 local plr = game.Players.LocalPlayer
 
 local debugContainer = Instance.new("ScreenGui")
+debugContainer.DisplayOrder = 500000000
 debugContainer.Parent = plr.PlayerGui
 
 local debugUIFrame = Instance.new("Frame")
