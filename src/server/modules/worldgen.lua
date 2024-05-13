@@ -36,9 +36,12 @@ local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
 local generatingThread
 
-local biomeBlocks: { Part } = {
+local biomeBlocks: { [string]: Part } = {
 	["grass"] = ServerStorage:WaitForChild("BasicPart"),
 	["dead"] = ServerStorage:WaitForChild("DeadPart"),
+	["snow"] = ServerStorage:WaitForChild("SnowPart"),
+	["rock"] = ServerStorage:WaitForChild("RockPart"),
+	["wet"] = ServerStorage:WaitForChild("WetPart"),
 }
 
 local function getRelativeHeight(x, z)
@@ -67,7 +70,9 @@ local function getMoisture(x, z): string
 	local noise = math.noise(x * BIOME_SMOOTH, z * BIOME_SMOOTH, MOISTURE_SEED)
 	noise += 0.5 -- get a value between 0-1
 
-	if noise >= 0.3 then
+	if noise >= 0.3 and noise <= 0.8 then
+		return "MEDIUM"
+	elseif noise > 0.8 then
 		return "HIGH"
 	else
 		return "LOW"
@@ -88,8 +93,14 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 			local moisture = getMoisture(realX, realZ)
 			local blockHeight = math.floor(height * (50 * AMPLITUDE))
 			local block
-			if moisture == "HIGH" then
+			if moisture == "HIGH" and blockHeight < 50 then
+				block = biomeBlocks.wet:Clone()
+			elseif moisture == "MEDIUM" and blockHeight < 50 then
 				block = biomeBlocks.grass:Clone()
+			elseif blockHeight >= 90 and (moisture == "MEDIUM" or moisture == "HIGH") then
+				block = biomeBlocks.snow:Clone()
+			elseif blockHeight >= 50 then
+				block = biomeBlocks.rock:Clone()
 			else
 				block = biomeBlocks.dead:Clone()
 			end
