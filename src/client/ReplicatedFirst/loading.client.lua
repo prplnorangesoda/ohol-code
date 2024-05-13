@@ -15,7 +15,6 @@ if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 -- fade in the loading bar
