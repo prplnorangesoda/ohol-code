@@ -31,11 +31,16 @@ local BIOME_SMOOTH = 0.02
 
 local AMPLITUDE = 2
 
-local INITIAL_SIZE = 5
+local INITIAL_SIZE = 20
+if game:GetService("RunService"):IsStudio() then
+	INITIAL_SIZE = 5
+end
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
 
-local SEA_LEVEL = 15
+local SEA_LEVEL = 17
+-- offset the water from the beachline to make it look more natural
+local REAL_SEA_LEVEL = SEA_LEVEL + 0.9
 
 local generatingThread
 
@@ -62,7 +67,7 @@ local function getRelativeHeight(x, z)
 	-- @see https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
 
 	-- add 0.5 to put value between 0 to 1
-	noise = math.pow((noise + 0.5) * 1.3 --[[fudge factor]], 2.5)
+	noise = math.pow((noise + 0.5) * 1.2 --[[fudge factor]], 4)
 
 	return noise
 end
@@ -84,7 +89,7 @@ local function getMoisture(x, z): string
 
 	if noise >= 0.3 and noise <= 0.8 then
 		return "MEDIUM"
-	elseif noise > 0.8 then
+	elseif noise > 0.7 then
 		return "HIGH"
 	else
 		return "LOW"
@@ -103,13 +108,13 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 			local moisture = getMoisture(realX, realZ)
 			local blockHeight = getBlockHeight(realX, realZ)
 			local block
-			if moisture == "HIGH" and blockHeight < 50 then
-				block = biomeBlocks.wet:Clone()
-			elseif blockHeight <= SEA_LEVEL + 10 then
+			if blockHeight <= SEA_LEVEL + 10 then
 				block = biomeBlocks.dead:Clone()
-			elseif blockHeight >= 90 and (moisture == "MEDIUM" or moisture == "HIGH") then
+			elseif moisture == "HIGH" and blockHeight < 50 then
+				block = biomeBlocks.wet:Clone()
+			elseif blockHeight >= 180 and (moisture == "MEDIUM" or moisture == "HIGH") then
 				block = biomeBlocks.snow:Clone()
-			elseif blockHeight >= 50 then
+			elseif blockHeight >= 150 then
 				block = biomeBlocks.rock:Clone()
 			else
 				block = biomeBlocks.grass:Clone()
@@ -142,6 +147,20 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 	-- 	end
 	-- end
 end
+
+function worldgenModule.generateWater(extentX, extentZ)
+	for i = -extentX, extentX do
+		local realX = i * 2048
+		for j = -extentZ, extentZ do
+			local realZ = j * 2048
+
+			local water: Part = ServerStorage.Water:Clone()
+			water.Size = Vector3.new(2048, REAL_SEA_LEVEL, 2048)
+			water.CFrame = CFrame.new(realX, REAL_SEA_LEVEL, realZ)
+			water.Parent = workspace.Swimmable
+		end
+	end
+end
 --- Generates procgen terrain with the set seed.
 --- Requires `worldgenModule.setSeed` to be run first.
 function worldgenModule.drawInitialTerrain()
@@ -157,8 +176,13 @@ function worldgenModule.drawInitialTerrain()
 				task.spawn(worldgenModule.generateChunk, i, j)
 			end
 		end
-		local water: Part = workspace.Swimmable.Water
-		water.CFrame = CFrame.new(0, SEA_LEVEL + 0.8, 0)
+
+		local water: Part = workspace.Water
+		-- ?????
+		water.CFrame = CFrame.new(0, REAL_SEA_LEVEL, 0)
+		water.Size = Vector3.new(10, REAL_SEA_LEVEL, 10)
+
+		worldgenModule.generateWater(10, 10)
 
 		worldCurrentlyGenerated = true
 		worldgenModule.initialWorldGenerated:Fire()

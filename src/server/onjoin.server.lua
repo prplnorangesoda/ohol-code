@@ -6,7 +6,7 @@ local initializeModule = require(ROJOSCRIPTS.modules.player_management.initializ
 local loadstateModule = require(ROJOSCRIPTS.modules.loadstate)
 local playerDrinkingModule = require(ROJOSCRIPTS.modules.player_management.playerDrinkingModule)
 
-local water: Part = workspace.Swimmable.Water
+local water: Part = workspace.Water
 
 local function onCharacterAdded(character: Model)
 	local humanoid: Humanoid = character:WaitForChild("Humanoid")
@@ -15,18 +15,14 @@ local function onCharacterAdded(character: Model)
 		if player == nil then
 			return
 		end
-		while task.wait(5) do
-			newTimerModule.findModuleFromPlayerID(player.UserId):KickEarly()
-			break
-		end
+		playerDrinkingModule.removePlayerDrinking(player)
+		task.wait(5)
+		newTimerModule.findModuleFromPlayerID(player.UserId):KickEarly()
 	end)
 	humanoid.StateChanged:Connect(function(old, new)
 		task.wait(0.3)
 		if new == Enum.HumanoidStateType.Swimming then
-			local partsTouchingPlayer = workspace:GetPartsInPart(character.HumanoidRootPart)
-			if table.find(partsTouchingPlayer, water) then
-				playerDrinkingModule.addPlayerDrinking(Players:GetPlayerFromCharacter(character))
-			end
+			playerDrinkingModule.addPlayerDrinking(Players:GetPlayerFromCharacter(character))
 		elseif old == Enum.HumanoidStateType.Swimming then
 			playerDrinkingModule.removePlayerDrinking(Players:GetPlayerFromCharacter(character))
 		end
@@ -60,4 +56,8 @@ Players.PlayerAdded:Connect(function(player)
 	else
 		queuingPlayersModule.addPlayer(player)
 	end
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	playerDrinkingModule.removePlayerDrinking(player)
 end)
