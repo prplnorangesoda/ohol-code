@@ -32,7 +32,7 @@ local BIOME_SMOOTH = 0.02
 local AMPLITUDE = Globals.worldGen.AMPLITUDE
 
 -- this will not run if it's too big :sob:
-local INITIAL_SIZE = 15
+local INITIAL_SIZE = 10
 if game:GetService("RunService"):IsStudio() then
 	INITIAL_SIZE = 2
 end
