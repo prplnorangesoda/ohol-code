@@ -6,8 +6,6 @@ local initializeModule = require(ROJOSCRIPTS.modules.player_management.initializ
 local loadstateModule = require(ROJOSCRIPTS.modules.loadstate)
 local playerDrinkingModule = require(ROJOSCRIPTS.modules.player_management.playerDrinkingModule)
 
-local water: Part = workspace.Water
-
 local function onCharacterAdded(character: Model)
 	local humanoid: Humanoid = character:WaitForChild("Humanoid")
 	humanoid.Died:Connect(function()

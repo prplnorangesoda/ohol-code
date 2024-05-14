@@ -31,7 +31,8 @@ local BIOME_SMOOTH = 0.02
 
 local AMPLITUDE = 2
 
-local INITIAL_SIZE = 20
+-- i think 320x320 is fine?
+local INITIAL_SIZE = 10
 if game:GetService("RunService"):IsStudio() then
 	INITIAL_SIZE = 5
 end
