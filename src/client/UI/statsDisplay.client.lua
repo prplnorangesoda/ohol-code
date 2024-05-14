@@ -39,5 +39,11 @@ hungerValue.Changed:Connect(function(value)
 end)
 
 local versionText: TextLabel = gui.GameUI.VersionLabel
-
 versionText.Text = "v" .. versionModule.VERSION
+
+local timeLeftText: TextLabel = gui.GameUI.TimeLeft
+timeLeftText.Text = "60"
+local timeLeftValue: IntValue = plr.TimeRemaining
+timeLeftValue.Changed:Connect(function(value)
+	timeLeftText.Text = math.ceil(value / 60)
+end)

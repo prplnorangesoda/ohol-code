@@ -28,13 +28,13 @@ if RunService:IsStudio() and Flags.getFlag("FoodGen") then
 	task.spawn(foodDebugSpawner)
 end
 
-task.spawn(function()
-	worldgenModule.setSeed()
+-- allow other tasks to run - replace this with BindableEvent eventually
+task.wait(5)
+worldgenModule.setSeed()
 
-	if not (RunService:IsStudio() and Flags.getFlag("Debug")) then
-		worldgenModule.drawInitialTerrain()
-	end
-end)
+if not (RunService:IsStudio() and Flags.getFlag("Debug")) then
+	worldgenModule.drawInitialTerrain()
+end
 
 -- spawn trees
 
