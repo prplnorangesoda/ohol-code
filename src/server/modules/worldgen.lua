@@ -1,5 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Flags = require(game.ReplicatedStorage.Shared.gameFlags)
+local Globals = require(game.ReplicatedStorage.Shared.gameGlobals)
 local worldgenModule = {}
 
 local worldgenFolder: Folder = workspace:WaitForChild("procgen")
@@ -26,22 +28,18 @@ function worldgenModule.setSeed(seed)
 	print("SERVER SEED SET:", BASE_SEED)
 end
 
--- 0 = perfect smooth
--- up to 1 = more aggressive
-local SMOOTH = 0.5
 local BIOME_SMOOTH = 0.02
-
-local AMPLITUDE = 4
+local AMPLITUDE = Globals.worldGen.AMPLITUDE
 
 -- this will not run if it's too big :sob:
-local INITIAL_SIZE = 6
+local INITIAL_SIZE = 15
 if game:GetService("RunService"):IsStudio() then
-	INITIAL_SIZE = 5
+	INITIAL_SIZE = 2
 end
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
 
-local SEA_LEVEL = 30
+local SEA_LEVEL = Globals.worldGen.SEA_LEVEL
 -- offset the water from the beachline to make it look more natural
 local REAL_SEA_LEVEL = SEA_LEVEL + 0.9
 
@@ -110,7 +108,7 @@ end
 
 function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 	local chunkFolder = Instance.new("Folder")
-	chunkFolder.Name = "chunk" .. xChunkCoord .. " " .. zChunkCoord
+	chunkFolder.Name = "chunk (" .. xChunkCoord .. ", " .. zChunkCoord .. ")"
 	chunkFolder.Parent = worldgenFolder
 	for i = 1, CHUNK_SIZE do
 		local realX = i + (CHUNK_SIZE * xChunkCoord)
@@ -137,18 +135,11 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 			if visNoise then
 				block.CFrame = CFrame.new(realX * BLOCK_SIZE, 50, realZ * BLOCK_SIZE)
 				local colorValue = getHeight(realX, realZ)
-				if colorValue > 1 then
-					print(colorValue, block, math.noise(realX * SMOOTH, realZ * SMOOTH, HEIGHT_SEED))
-				end
 				block.Color = Color3.fromHSV(0, 0, colorValue)
 			else
 				block.CFrame = CFrame.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE)
 			end
 			block.Parent = chunkFolder
-
-			if block.CFrame.Y < -500 then
-				print(blockHeight, i, j, math.noise(realX * SMOOTH, realZ * SMOOTH, HEIGHT_SEED))
-			end
 		end
 	end
 
@@ -204,8 +195,8 @@ function worldgenModule.drawInitialTerrain(size)
 			end
 		end
 
-		local water: Part = workspace.Water
-		-- ?????
+		local water: Part = ReplicatedStorage.Water
+
 		water.CFrame = CFrame.new(0, REAL_SEA_LEVEL, 0)
 		water.Size = Vector3.new(10, REAL_SEA_LEVEL, 10)
 
