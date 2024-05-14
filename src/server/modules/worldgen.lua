@@ -1,4 +1,5 @@
 local ServerStorage = game:GetService("ServerStorage")
+local Flags = require(game.ReplicatedStorage.Shared.gameFlags)
 local worldgenModule = {}
 
 local worldgenFolder: Folder = workspace:WaitForChild("procgen")
@@ -8,6 +9,7 @@ local seedSet, worldCurrentlyGenerated = false, false
 
 worldgenModule.initialWorldGenerated = Instance.new("BindableEvent")
 worldgenModule.isInitialWorldGenerated = false
+local visNoise = false
 
 ---Set the seed used by the world generator.
 ---@param seed number|nil The seed to set. If left blank, will be randomly generated.
@@ -26,15 +28,15 @@ end
 
 -- 0 = perfect smooth
 -- up to 1 = more aggressive
-local SMOOTH = 0.02
+local SMOOTH = 0.05
 local BIOME_SMOOTH = 0.02
 
 local AMPLITUDE = 2
 
--- i think 320x320 is fine?
-local INITIAL_SIZE = 10
+-- this will not run if it's too big :sob:
+local INITIAL_SIZE = 6
 if game:GetService("RunService"):IsStudio() then
-	INITIAL_SIZE = 5
+	INITIAL_SIZE = 3
 end
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
@@ -60,21 +62,21 @@ local function getRelativeHeight(x, z)
 	end
 	local noise = math.noise(x * SMOOTH, z * SMOOTH, HEIGHT_SEED)
 
+	noise += 0.5
 	-- force a lower end to avoid holes caused by NaN Y
-	if noise < -0.5 then
-		noise = -0.5
+	if noise < 0 then
+		noise = 0
 	end
-	--- bias towards the lower ends of noise.
-	-- @see https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
 
 	-- add 0.5 to put value between 0 to 1
-	noise = math.pow((noise + 0.5) * 1.2 --[[fudge factor]], 4)
-
 	return noise
 end
 
 local function getBlockHeight(x, z)
-	return math.floor(getRelativeHeight(x, z) * (50 * AMPLITUDE))
+	--- bias towards the lower ends of noise.
+	-- @see https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
+	local relativeHeight = math.pow((getRelativeHeight(x, z)) * 1.2 --[[fudge factor]], 3)
+	return math.floor(relativeHeight * (50 * AMPLITUDE))
 end
 
 ---Get the moisture for a 2D position using the moisture noisemap.
@@ -109,19 +111,30 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 			local moisture = getMoisture(realX, realZ)
 			local blockHeight = getBlockHeight(realX, realZ)
 			local block
-			if blockHeight <= SEA_LEVEL + 10 then
+			if blockHeight <= SEA_LEVEL + 6 then
 				block = biomeBlocks.dead:Clone()
 			elseif moisture == "HIGH" and blockHeight < 50 then
 				block = biomeBlocks.wet:Clone()
-			elseif blockHeight >= 180 and (moisture == "MEDIUM" or moisture == "HIGH") then
+			elseif blockHeight >= 350 and (moisture == "MEDIUM" or moisture == "HIGH") then
 				block = biomeBlocks.snow:Clone()
 			elseif blockHeight >= 150 then
 				block = biomeBlocks.rock:Clone()
 			else
 				block = biomeBlocks.grass:Clone()
 			end
+
 			block.Name = i .. " " .. j
-			block.CFrame = CFrame.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE)
+
+			if visNoise then
+				block.CFrame = CFrame.new(realX * BLOCK_SIZE, 50, realZ * BLOCK_SIZE)
+				local colorValue = getRelativeHeight(realX, realZ)
+				if colorValue > 1 then
+					print(colorValue, block, math.noise(realX * SMOOTH, realZ * SMOOTH, HEIGHT_SEED))
+				end
+				block.Color = Color3.fromHSV(0, 0, colorValue)
+			else
+				block.CFrame = CFrame.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE)
+			end
 			block.Parent = chunkFolder
 
 			if block.CFrame.Y < -500 then
@@ -164,16 +177,20 @@ function worldgenModule.generateWater(extentX, extentZ)
 end
 --- Generates procgen terrain with the set seed.
 --- Requires `worldgenModule.setSeed` to be run first.
-function worldgenModule.drawInitialTerrain()
+function worldgenModule.drawInitialTerrain(size)
+	if size == nil then
+		size = INITIAL_SIZE
+	end
 	if not seedSet then
 		error("Seed not set")
 	end
 	if worldCurrentlyGenerated then
 		warn("World is already generated. Possible double run?")
 	end
+	visNoise = Flags.getFlag("VisualizeNoise")
 	generatingThread = task.spawn(function()
-		for i = -INITIAL_SIZE, INITIAL_SIZE do
-			for j = -INITIAL_SIZE, INITIAL_SIZE do
+		for i = -size, size do
+			for j = -size, size do
 				task.spawn(worldgenModule.generateChunk, i, j)
 			end
 		end

@@ -4,15 +4,16 @@ local gameFlags = ReplicatedStorage:WaitForChild("GAMEFLAGS")
 local flags: { [string]: BoolValue } = {
 	["Debug"] = gameFlags.Debug,
 	["FoodGen"] = gameFlags.FoodGen,
+	["VisualizeNoise"] = gameFlags.VisualizeNoise,
 }
 
 ---Get the state of the specified flag.
 gameFlagsModule.getFlag = function(flag: string): boolean
-	local value = flags[flag].Value
+	local value = flags[flag]
 	if value == nil then
 		error("Flag not found: " .. flag)
 	end
-	return value
+	return value.Value
 end
 
 return gameFlagsModule

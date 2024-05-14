@@ -28,11 +28,13 @@ if RunService:IsStudio() and Flags.getFlag("FoodGen") then
 	task.spawn(foodDebugSpawner)
 end
 
-worldgenModule.setSeed()
+task.spawn(function()
+	worldgenModule.setSeed()
 
-if not (RunService:IsStudio() and Flags.getFlag("Debug")) then
-	worldgenModule.drawInitialTerrain()
-end
+	if not (RunService:IsStudio() and Flags.getFlag("Debug")) then
+		worldgenModule.drawInitialTerrain()
+	end
+end)
 
 -- spawn trees
 
