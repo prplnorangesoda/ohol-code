@@ -28,7 +28,7 @@ end
 
 -- 0 = perfect smooth
 -- up to 1 = more aggressive
-local SMOOTH = 0.05
+local SMOOTH = 0.5
 local BIOME_SMOOTH = 0.02
 
 local AMPLITUDE = 2
@@ -36,7 +36,7 @@ local AMPLITUDE = 2
 -- this will not run if it's too big :sob:
 local INITIAL_SIZE = 6
 if game:GetService("RunService"):IsStudio() then
-	INITIAL_SIZE = 3
+	INITIAL_SIZE = 1
 end
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
@@ -44,6 +44,13 @@ local BLOCK_SIZE = 8
 local SEA_LEVEL = 17
 -- offset the water from the beachline to make it look more natural
 local REAL_SEA_LEVEL = SEA_LEVEL + 0.9
+
+local function heightNoise(x, y)
+	local nx = x / INITIAL_SIZE
+	local ny = y / INITIAL_SIZE
+	local noise = math.noise(nx, ny, HEIGHT_SEED)
+	return noise
+end
 
 local generatingThread
 
@@ -56,26 +63,22 @@ local biomeBlocks: { [string]: Part } = {
 	["water"] = ServerStorage:WaitForChild("Water"),
 }
 
-local function getRelativeHeight(x, z)
+local function getHeight(x, z)
 	if not seedSet then
 		error("Seed not set")
 	end
-	local noise = math.noise(x * SMOOTH, z * SMOOTH, HEIGHT_SEED)
 
-	noise += 0.5
-	-- force a lower end to avoid holes caused by NaN Y
-	if noise < 0 then
-		noise = 0
-	end
-
-	-- add 0.5 to put value between 0 to 1
-	return noise
+	local octave1 = heightNoise(x, z)
+	local octave2 = 0.5 * heightNoise(2 * x, 2 * z)
+	local octave3 = 0.25 * heightNoise(4 * x, 4 * z)
+	local e = octave1 + octave2 + octave3
+	return e / (1 + 0.5 + 0.25)
 end
 
 local function getBlockHeight(x, z)
 	--- bias towards the lower ends of noise.
 	-- @see https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
-	local relativeHeight = math.pow((getRelativeHeight(x, z)) * 1.2 --[[fudge factor]], 3)
+	local relativeHeight = math.pow((getHeight(x, z)) * 1.2 --[[fudge factor]], 3)
 	return math.floor(relativeHeight * (50 * AMPLITUDE))
 end
 
@@ -127,7 +130,7 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 
 			if visNoise then
 				block.CFrame = CFrame.new(realX * BLOCK_SIZE, 50, realZ * BLOCK_SIZE)
-				local colorValue = getRelativeHeight(realX, realZ)
+				local colorValue = getHeight(realX, realZ)
 				if colorValue > 1 then
 					print(colorValue, block, math.noise(realX * SMOOTH, realZ * SMOOTH, HEIGHT_SEED))
 				end
