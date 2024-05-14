@@ -1,3 +1,9 @@
+local enabled = false
+
+if not enabled then
+	return
+end
+
 local seed = 0
 local fudge_factor = 1.2
 local size = 200
@@ -13,7 +19,7 @@ end
 for x = 0, size do
 	noiseTable[x] = {}
 	for z = 0, size do
-		local octave1 = 1 * noise(0.5 * x, 0.5 * z)
+		local octave1 = 1 * noise(0.25 * x, 0.25 * z)
 		local octave2 = 0.5 * noise(x, z)
 		local octave3 = 0.25 * noise(2 * x, 2 * z)
 		local total = octave1 + octave2 + octave3
@@ -23,7 +29,8 @@ for x = 0, size do
 	end
 end
 
-local partFolder = Instance.new("Folder", workspace)
+local partFolder = Instance.new("Folder")
+partFolder.Parent = workspace
 for x, table in ipairs(noiseTable) do
 	for z, noiseValue in ipairs(table) do
 		local part = Instance.new("Part")

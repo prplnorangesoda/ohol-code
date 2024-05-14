@@ -31,25 +31,35 @@ end
 local SMOOTH = 0.5
 local BIOME_SMOOTH = 0.02
 
-local AMPLITUDE = 2
+local AMPLITUDE = 4
 
 -- this will not run if it's too big :sob:
 local INITIAL_SIZE = 6
 if game:GetService("RunService"):IsStudio() then
-	INITIAL_SIZE = 1
+	INITIAL_SIZE = 5
 end
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
 
-local SEA_LEVEL = 17
+local SEA_LEVEL = 30
 -- offset the water from the beachline to make it look more natural
 local REAL_SEA_LEVEL = SEA_LEVEL + 0.9
 
+local function noise(x, y)
+	local nx = x / 10
+	local nz = y / 10
+	return math.clamp(math.noise(nx, nz, HEIGHT_SEED), -1, 1) / 2 + 0.5
+end
+
 local function heightNoise(x, y)
-	local nx = x / INITIAL_SIZE
-	local ny = y / INITIAL_SIZE
-	local noise = math.noise(nx, ny, HEIGHT_SEED)
-	return noise
+	local octave1 = 1 * noise(0.25 * x, 0.25 * y)
+	local octave2 = 0.5 * noise(0.3 * x, 0.3 * y)
+	local octave3 = 0.25 * noise(0.5 * x, 0.5 * y)
+	local octave4 = 0.125 * noise(x, y)
+	local total = octave1 + octave2 + octave3 + octave4
+	total = total / (1 + 0.5 + 0.25 + 0.125)
+	total = math.pow(total * 1.3, 4)
+	return total
 end
 
 local generatingThread
@@ -67,19 +77,15 @@ local function getHeight(x, z)
 	if not seedSet then
 		error("Seed not set")
 	end
-
-	local octave1 = heightNoise(x, z)
-	local octave2 = 0.5 * heightNoise(2 * x, 2 * z)
-	local octave3 = 0.25 * heightNoise(4 * x, 4 * z)
-	local e = octave1 + octave2 + octave3
-	return e / (1 + 0.5 + 0.25)
+	return heightNoise(x, z)
 end
 
 local function getBlockHeight(x, z)
-	--- bias towards the lower ends of noise.
-	-- @see https://www.redblobgames.com/maps/terrain-from-noise/#elevation-redistribution
-	local relativeHeight = math.pow((getHeight(x, z)) * 1.2 --[[fudge factor]], 3)
-	return math.floor(relativeHeight * (50 * AMPLITUDE))
+	local relativeHeight = getHeight(x, z)
+	relativeHeight = relativeHeight * (50 * AMPLITUDE)
+
+	relativeHeight = math.round(relativeHeight / 1.5) * 1.5
+	return relativeHeight
 end
 
 ---Get the moisture for a 2D position using the moisture noisemap.
@@ -90,12 +96,12 @@ local function getMoisture(x, z): string
 	if not seedSet then
 		error("Seed not set")
 	end
-	local noise = math.noise(x * BIOME_SMOOTH, z * BIOME_SMOOTH, MOISTURE_SEED)
-	noise += 0.5 -- get a value between 0-1
+	local moisture = math.noise(x * BIOME_SMOOTH, z * BIOME_SMOOTH, MOISTURE_SEED)
+	moisture += 0.5 -- get a value between 0-1
 
-	if noise >= 0.3 and noise <= 0.8 then
+	if moisture >= 0.3 and moisture <= 0.8 then
 		return "MEDIUM"
-	elseif noise > 0.7 then
+	elseif moisture > 0.7 then
 		return "HIGH"
 	else
 		return "LOW"
@@ -118,9 +124,9 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 				block = biomeBlocks.dead:Clone()
 			elseif moisture == "HIGH" and blockHeight < 50 then
 				block = biomeBlocks.wet:Clone()
-			elseif blockHeight >= 350 and (moisture == "MEDIUM" or moisture == "HIGH") then
+			elseif blockHeight >= 180 and (moisture == "MEDIUM" or moisture == "HIGH") then
 				block = biomeBlocks.snow:Clone()
-			elseif blockHeight >= 150 then
+			elseif blockHeight >= 125 then
 				block = biomeBlocks.rock:Clone()
 			else
 				block = biomeBlocks.grass:Clone()
