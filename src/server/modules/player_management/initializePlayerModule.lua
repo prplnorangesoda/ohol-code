@@ -28,6 +28,8 @@ initializeModule.initPlayer = function(player: Player)
 	hungerValue.Changed:Connect(function(value)
 		if value > 300 then
 			hungerValue.Value = 300
+		elseif value < 0 then
+			hungerValue.Value = 0
 		end
 	end)
 
@@ -38,6 +40,8 @@ initializeModule.initPlayer = function(player: Player)
 	thirstValue.Changed:Connect(function(value)
 		if value > 500 then
 			thirstValue.Value = 500
+		elseif value < 0 then
+			thirstValue.Value = 0
 		end
 	end)
 
