@@ -20,10 +20,10 @@ treeModule.createTreeFrom = function(tree: Model, foodType: string)
 
 	local foodItem = whatToDoForEachFoodType[foodType]
 
-	local fruitSpawningRoutine = coroutine.create(function() -- Coroutine Vs Task spawn
+	local _fruitSpawningThread = task.spawn(function() -- Coroutine Vs Task spawn
 		local fruitSpawned = 0
-		while task.wait(math.random(45, 180)) do
-			if fruitSpawned >= 5 then
+		while task.wait(math.random(60, 480)) do
+			if fruitSpawned >= 2 then
 				continue
 			end
 			local newFruit: Tool = foodItem:Clone()
@@ -32,6 +32,7 @@ treeModule.createTreeFrom = function(tree: Model, foodType: string)
 			newFruit.PrimaryPart:PivotTo(leaves.CFrame + determineSpawningLocationInLeavesRandomly(leaves.Size))
 			newFruit.Changed:Connect(function(prop)
 				if prop == "Parent" then
+					fruitSpawned -= 1
 					newFruit.PrimaryPart.Anchored = false
 				end
 			end)
@@ -47,6 +48,5 @@ treeModule.createTreeFrom = function(tree: Model, foodType: string)
 			end
 		end
 	end)
-	coroutine.resume(fruitSpawningRoutine)
 end
 return treeModule
