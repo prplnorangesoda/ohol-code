@@ -4,28 +4,25 @@ if not enabled then
 	return
 end
 
-local seed = 0
-local fudge_factor = 1.2
-local size = 200
-local noiseTable = {}
-local AMPLITUDE = 3
+local MOISTURE_SEED = 0
+local AMPLITUDE = 1
 
-local function noise(x, y)
+local function noiseWithMoistureSeed(x, y)
 	local nx = x / 10
 	local nz = y / 10
-	return math.clamp(math.noise(nx, nz, seed), -1, 1) / 2 + 0.5
+	return math.clamp(math.noise(nx, nz, MOISTURE_SEED), -1, 1) / 2 + 0.5
 end
 
-for x = 0, size do
-	noiseTable[x] = {}
-	for z = 0, size do
-		local octave1 = 1 * noise(0.25 * x, 0.25 * z)
-		local octave2 = 0.5 * noise(x, z)
-		local octave3 = 0.25 * noise(2 * x, 2 * z)
-		local total = octave1 + octave2 + octave3
-		total = total / (1 + 0.5 + 0.25)
-		total = math.pow(total * fudge_factor, 1.5)
-		noiseTable[x][z] = total
+local function getMoisture(x, z): number
+	local octave1 = noiseWithMoistureSeed(0.2 * x, 0.2 * z)
+	return math.pow(octave1, 2)
+end
+
+local noiseTable = {}
+for i = -150, 150 do
+	noiseTable[i] = {}
+	for j = -150, 150 do
+		noiseTable[i][j] = getMoisture(i, j)
 	end
 end
 

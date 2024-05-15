@@ -36,7 +36,7 @@ if not (RunService:IsStudio() and Flags.getFlag("Debug")) then
 	worldgenModule.drawInitialTerrain()
 end
 
--- spawn trees
+-- -- spawn trees
 
 -- for _, value: Part in workspace.Saved.TreeSpawnpoints:GetChildren() do
 -- 	local clonedTree = ReplicatedStorage.BasicTree:Clone()

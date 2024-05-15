@@ -30,7 +30,6 @@ function worldgenModule.setSeed(seed)
 	print("SERVER SEED SET:", BASE_SEED)
 end
 
-local BIOME_SMOOTH = 0.02
 local AMPLITUDE = Globals.worldGen.AMPLITUDE
 
 -- this will not run if it's too big :sob:
@@ -49,6 +48,11 @@ local function noiseWithHeightSeed(x, y)
 	local nx = x / 10
 	local nz = y / 10
 	return math.clamp(math.noise(nx, nz, HEIGHT_SEED), -1, 1) / 2 + 0.5
+end
+local function noiseWithMoistureSeed(x, y)
+	local nx = x / 10
+	local nz = y / 10
+	return math.clamp(math.noise(nx, nz, MOISTURE_SEED), -1, 1) / 2 + 0.5
 end
 
 local function heightNoise(x, y)
@@ -92,21 +96,10 @@ end
 ---Get the moisture for a 2D position using the moisture noisemap.
 ---@param x number X coordinate
 ---@param z number Z coordinate
----@return string
-local function getMoisture(x, z): string
-	if not seedSet then
-		error("Seed not set")
-	end
-	local moisture = math.noise(x * BIOME_SMOOTH, z * BIOME_SMOOTH, MOISTURE_SEED)
-	moisture += 0.5 -- get a value between 0-1
-
-	if moisture >= 0.3 and moisture <= 0.8 then
-		return "MEDIUM"
-	elseif moisture > 0.7 then
-		return "HIGH"
-	else
-		return "LOW"
-	end
+---@return number
+local function getMoisture(x, z): number
+	local octave1 = noiseWithMoistureSeed(0.2 * x, 0.2 * z)
+	return math.pow(octave1, 2)
 end
 
 local function getBiome(x, y, z)
@@ -115,12 +108,15 @@ local function getBiome(x, y, z)
 		return "OCEAN"
 	elseif y <= SEA_LEVEL + 6 then
 		return "BEACH"
-	elseif moisture == "HIGH" and y < 50 then
+	elseif moisture >= 0.7 and y < 50 then
 		return "SWAMP"
-	elseif y >= 180 and (moisture == "MEDIUM" or moisture == "HIGH") then
+	elseif y >= 180 and moisture >= 0.3 then
 		return "MOUNTAIN_SNOW"
 	elseif y >= 125 then
+		print(moisture)
 		return "MOUNTAIN"
+	elseif moisture >= 0.3 then
+		return "FOREST"
 	else
 		return "PLAINS"
 	end
@@ -128,9 +124,11 @@ end
 
 local function shouldSpawnTreeAt(x: number, y: number, z: number)
 	local biome = getBiome(x, y, z)
-	print(x, y, z, biome)
+	-- print(x, y, z, biome)
 
 	if biome == "OCEAN" or biome == "BEACH" or biome == "MOUNTAIN_SNOW" then
+		return false
+	elseif biome == "PLAINS" or biome == "MOUNTAIN" then
 		return false
 	end
 	return true
@@ -143,6 +141,7 @@ local blockTable: { Part } = {
 	["MOUNTAIN_SNOW"] = biomeBlocks.snow,
 	["MOUNTAIN"] = biomeBlocks.rock,
 	["PLAINS"] = biomeBlocks.grass,
+	["FOREST"] = biomeBlocks.grass,
 }
 function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 	local chunkFolder = Instance.new("Folder")
@@ -173,7 +172,7 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 			block.Parent = chunkFolder
 		end
 	end
-	local poisson = poissonDisk(CHUNK_SIZE, CHUNK_SIZE, 4, 2)
+	local poisson = poissonDisk(CHUNK_SIZE, CHUNK_SIZE, 2, 5)
 
 	for _, value: Vector2 in ipairs(poisson) do
 		local roundedValues = {
@@ -184,9 +183,9 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 		local realZ = (roundedValues.z + zOffset)
 		local realY = getBlockHeight(realX, realZ)
 
-		print(realX * BLOCK_SIZE, realZ * BLOCK_SIZE)
+		-- print(realX * BLOCK_SIZE, realZ * BLOCK_SIZE)
 		local shouldSpawn = shouldSpawnTreeAt(realX, realY, realZ)
-		print(shouldSpawn)
+		-- print(shouldSpawn)
 		if shouldSpawn then
 			local treePosition = Vector3.new(realX * BLOCK_SIZE, realY + 21.5, realZ * BLOCK_SIZE)
 			local tree: Model = ReplicatedStorage.BasicTree:Clone()
