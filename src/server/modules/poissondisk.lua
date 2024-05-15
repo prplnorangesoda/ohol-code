@@ -1,3 +1,4 @@
+--# selene: allow(unused_variable)
 local ReplicatedStorage = game.ReplicatedStorage
 local Globals = require(ReplicatedStorage.Shared.gameGlobals)
 -- This is a lua implementation of the algorithm described in
