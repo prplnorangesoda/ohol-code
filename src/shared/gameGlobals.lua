@@ -3,9 +3,8 @@ local gameGlobals = {
 	worldGen = {
 		SEA_LEVEL = 30,
 		AMPLITUDE = 4,
+		SEED = 0,
 	},
 }
-
-table.freeze(gameGlobals)
 
 return gameGlobals

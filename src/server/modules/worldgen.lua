@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Flags = require(game.ReplicatedStorage.Shared.gameFlags)
 local Globals = require(game.ReplicatedStorage.Shared.gameGlobals)
+local poissonDisk = require(script.Parent.poissondisk)
 local worldgenModule = {}
 
 local worldgenFolder: Folder = workspace:WaitForChild("procgen")
@@ -21,10 +22,11 @@ function worldgenModule.setSeed(seed)
 	else
 		BASE_SEED = seed
 	end
-	HEIGHT_SEED = BASE_SEED
+	HEIGHT_SEED = (BASE_SEED + 50) / 5
 	MOISTURE_SEED = (HEIGHT_SEED + 30) / 4
 
 	seedSet = true
+	Globals.worldGen.SEED = BASE_SEED
 	print("SERVER SEED SET:", BASE_SEED)
 end
 
@@ -43,17 +45,18 @@ local SEA_LEVEL = Globals.worldGen.SEA_LEVEL
 -- offset the water from the beachline to make it look more natural
 local REAL_SEA_LEVEL = SEA_LEVEL + 0.9
 
-local function noise(x, y)
+local function noiseWithHeightSeed(x, y)
 	local nx = x / 10
 	local nz = y / 10
 	return math.clamp(math.noise(nx, nz, HEIGHT_SEED), -1, 1) / 2 + 0.5
 end
 
 local function heightNoise(x, y)
-	local octave1 = 1 * noise(0.25 * x, 0.25 * y)
-	local octave2 = 0.5 * noise(0.3 * x, 0.3 * y)
-	local octave3 = 0.25 * noise(0.5 * x, 0.5 * y)
-	local octave4 = 0.125 * noise(x, y)
+	-- red noise - smoother noise tables are prioritized
+	local octave1 = 1 * noiseWithHeightSeed(0.25 * x, 0.25 * y)
+	local octave2 = 0.5 * noiseWithHeightSeed(0.3 * x, 0.3 * y)
+	local octave3 = 0.25 * noiseWithHeightSeed(0.5 * x, 0.5 * y)
+	local octave4 = 0.125 * noiseWithHeightSeed(x, y)
 	local total = octave1 + octave2 + octave3 + octave4
 	total = total / (1 + 0.5 + 0.25 + 0.125)
 	total = math.pow(total * 1.3, 4)
@@ -106,29 +109,57 @@ local function getMoisture(x, z): string
 	end
 end
 
+local function getBiome(x, y, z)
+	local moisture = getMoisture(x, z)
+	if y < SEA_LEVEL then
+		return "OCEAN"
+	elseif y <= SEA_LEVEL + 6 then
+		return "BEACH"
+	elseif moisture == "HIGH" and y < 50 then
+		return "SWAMP"
+	elseif y >= 180 and (moisture == "MEDIUM" or moisture == "HIGH") then
+		return "MOUNTAIN_SNOW"
+	elseif y >= 125 then
+		return "MOUNTAIN"
+	else
+		return "PLAINS"
+	end
+end
+
+local function shouldSpawnTreeAt(x: number, y: number, z: number)
+	local biome = getBiome(x, y, z)
+	print(x, y, z, biome)
+
+	if biome == "OCEAN" or biome == "BEACH" or biome == "MOUNTAIN_SNOW" then
+		return false
+	end
+	return true
+end
+
+local blockTable: { Part } = {
+	["BEACH"] = biomeBlocks.dead,
+	["OCEAN"] = biomeBlocks.dead,
+	["SWAMP"] = biomeBlocks.wet,
+	["MOUNTAIN_SNOW"] = biomeBlocks.snow,
+	["MOUNTAIN"] = biomeBlocks.rock,
+	["PLAINS"] = biomeBlocks.grass,
+}
 function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 	local chunkFolder = Instance.new("Folder")
+
+	local xOffset = CHUNK_SIZE * xChunkCoord
+	local zOffset = CHUNK_SIZE * zChunkCoord
 	chunkFolder.Name = "chunk (" .. xChunkCoord .. ", " .. zChunkCoord .. ")"
 	chunkFolder.Parent = worldgenFolder
 	for i = 1, CHUNK_SIZE do
-		local realX = i + (CHUNK_SIZE * xChunkCoord)
+		local realX = i + xOffset
 		for j = 1, CHUNK_SIZE do
-			local realZ = j + (CHUNK_SIZE * zChunkCoord)
+			local realZ = j + zOffset
 
-			local moisture = getMoisture(realX, realZ)
 			local blockHeight = getBlockHeight(realX, realZ)
-			local block
-			if blockHeight <= SEA_LEVEL + 6 then
-				block = biomeBlocks.dead:Clone()
-			elseif moisture == "HIGH" and blockHeight < 50 then
-				block = biomeBlocks.wet:Clone()
-			elseif blockHeight >= 180 and (moisture == "MEDIUM" or moisture == "HIGH") then
-				block = biomeBlocks.snow:Clone()
-			elseif blockHeight >= 125 then
-				block = biomeBlocks.rock:Clone()
-			else
-				block = biomeBlocks.grass:Clone()
-			end
+			local biome = getBiome(realX, blockHeight, realZ)
+
+			local block = blockTable[biome]:Clone()
 
 			block.Name = i .. " " .. j
 
@@ -140,6 +171,29 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 				block.CFrame = CFrame.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE)
 			end
 			block.Parent = chunkFolder
+		end
+	end
+	local poisson = poissonDisk(CHUNK_SIZE, CHUNK_SIZE, 4, 2)
+
+	for _, value: Vector2 in ipairs(poisson) do
+		local roundedValues = {
+			x = math.round(value.X),
+			z = math.round(value.Y),
+		}
+		local realX = (roundedValues.x + xOffset)
+		local realZ = (roundedValues.z + zOffset)
+		local realY = getBlockHeight(realX, realZ)
+
+		print(realX * BLOCK_SIZE, realZ * BLOCK_SIZE)
+		local shouldSpawn = shouldSpawnTreeAt(realX, realY, realZ)
+		print(shouldSpawn)
+		if shouldSpawn then
+			local treePosition = Vector3.new(realX * BLOCK_SIZE, realY + 21.5, realZ * BLOCK_SIZE)
+			local tree: Model = ReplicatedStorage.BasicTree:Clone()
+			tree:PivotTo(CFrame.new(treePosition))
+			tree.Parent = worldgenFolder.trees
+
+			print(treePosition)
 		end
 	end
 

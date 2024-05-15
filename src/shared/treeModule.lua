@@ -6,7 +6,6 @@ local function determineSpawningLocationInLeavesRandomly(leavesSize: Vector3)
 	local rads = math.rad(rotation)
 	local distX = math.cos(rads) * leavesSize.X / 2
 	local distZ = math.sin(rads) * leavesSize.X / 2
-	print(distX, distZ)
 	return Vector3.new(distX, 0, distZ)
 end
 
@@ -31,6 +30,11 @@ treeModule.createTreeFrom = function(tree: Model, foodType: string)
 			newFruit.Parent = tree
 			newFruit.PrimaryPart.Anchored = true
 			newFruit.PrimaryPart:PivotTo(leaves.CFrame + determineSpawningLocationInLeavesRandomly(leaves.Size))
+			newFruit.Changed:Connect(function(prop)
+				if prop == "Parent" then
+					newFruit.PrimaryPart.Anchored = false
+				end
+			end)
 		end
 	end)
 

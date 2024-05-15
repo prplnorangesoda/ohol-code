@@ -30,7 +30,6 @@ playerAgeModule.new = function(player: Player)
 			yearsAliveText = yearsAlive .. " years alive"
 		end
 		nametag.YearsAlive.Text = yearsAliveText
-		print(yearsAlive)
 	end)
 	return self
 end
