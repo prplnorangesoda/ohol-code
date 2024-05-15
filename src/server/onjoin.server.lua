@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ROJOSCRIPTS = game:GetService("ServerScriptService").Server
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local newTimerModule = require(ROJOSCRIPTS.modules.player_management.newTimerModule)
 local queuingPlayersModule = require(ROJOSCRIPTS.modules.player_management.queuingPlayersModule)
 local initializeModule = require(ROJOSCRIPTS.modules.player_management.initializePlayerModule)
@@ -25,7 +26,7 @@ local function onCharacterAdded(character: Model)
 			playerDrinkingModule.removePlayerDrinking(Players:GetPlayerFromCharacter(character))
 		end
 	end)
-
+	
 	print(character, " has spawned")
 end
 

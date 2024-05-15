@@ -23,11 +23,15 @@ LoadingGui.Destroying:Once(function()
 		ReplicatedStorage.Shared.remotes.ServerLoaded.OnClientEvent:Wait()
 		ServerLoadingText.Visible = false
 	end
+
+	-- currently waiting
 	WaitingToPlayText.Visible = true
-	local isPlaying: BoolValue = plr.IsPlaying
+	local isPlaying: BoolValue = plr:WaitForChild("IsPlaying")
 	if not isPlaying.Value then
 		isPlaying.Changed:Wait()
 	end
+
+	-- we're ready to play
 	WaitingToPlayText.Visible = false
 	plr.PlayerGui:WaitForChild("GameUI").Enabled = true
 	local waitingUIfadeout = TweenService:Create(wholeUI, TweenInfo.new(0.5), { GroupTransparency = 1 })

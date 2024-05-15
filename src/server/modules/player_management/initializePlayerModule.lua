@@ -1,7 +1,9 @@
 local TIME_BEFORE_KICK = 60 * 60 -- 60 Minutes in Seconds
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Teams = game:GetService("Teams")
 local newTimerModule = require(script.Parent.newTimerModule)
 local playerTickModule = require(script.Parent.playerTickModule)
+local playerAgeModule = require(script.Parent.handlePlayerAge)
 
 local initializeModule = {}
 
@@ -45,11 +47,13 @@ initializeModule.initPlayer = function(player: Player)
 		end
 	end)
 
-	local playerTickRoutine = coroutine.create(function()
+	local _playerTickRoutine = task.spawn(function()
 		playerTickModule.new(statsFolder)
 	end)
 
-	coroutine.resume(playerTickRoutine)
+	local _handlePlayerAge = task.spawn(function()
+		playerAgeModule.new(player)
+	end)
 end
 
 return initializeModule

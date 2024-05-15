@@ -22,6 +22,12 @@
         "Client": {
           "$path": "src/client"
         }
+      },
+      "StarterCharacterScripts": {
+        "$ignoreUnknownInstances": true,
+        "Rojo": {
+          "$path": "src/characterscripts"
+        }
       }
     }
   }
