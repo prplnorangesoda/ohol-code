@@ -172,6 +172,8 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 			block.Parent = chunkFolder
 		end
 	end
+
+	-- generate trees using a Poisson disk
 	local poisson = poissonDisk(CHUNK_SIZE, CHUNK_SIZE, 2, 5)
 
 	for _, value: Vector2 in ipairs(poisson) do
@@ -184,6 +186,9 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 		local realY = getBlockHeight(realX, realZ)
 
 		-- print(realX * BLOCK_SIZE, realZ * BLOCK_SIZE)
+		-- this is ugly - we should just not generate poisson discs
+		-- for trees outside of biomes that don't support them
+		-- but i have no way how to do that
 		local shouldSpawn = shouldSpawnTreeAt(realX, realY, realZ)
 		-- print(shouldSpawn)
 		if shouldSpawn then
