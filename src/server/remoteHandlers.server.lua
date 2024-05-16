@@ -2,8 +2,9 @@ local ROJOSCRIPTS = game:GetService("ServerScriptService").Server
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local queuingPlayersModule = require(ROJOSCRIPTS.modules.player_management.queuingPlayersModule)
 local initializeModule = require(ROJOSCRIPTS.modules.player_management.initializePlayerModule)
+local loadstateModule = require(ROJOSCRIPTS.modules.loadstate)
 
-local remoteEvents: Folder = ReplicatedStorage.Shared.remotes
+local remoteEvents = ReplicatedStorage.Shared.remotes
 
 local babyRequestDebounce = false
 local babyEvent: RemoteEvent = remoteEvents.MakeChild
@@ -34,4 +35,9 @@ babyEvent.OnServerEvent:Connect(function(player)
 	player.PlayerStats.Thirst.Value -= 200
 	initializeModule.initPlayer(playerToBaby)
 	playerToBaby.Character:PivotTo(player.Character.PrimaryPart.CFrame)
+end)
+
+local loadStateEvent = remoteEvents.LoadStateChanged
+loadstateModule.loadStateChanged.Event:Connect(function(state)
+	loadStateEvent:FireAllClients(state)
 end)

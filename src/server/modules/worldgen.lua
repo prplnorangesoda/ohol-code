@@ -10,6 +10,15 @@ local worldgenFolder: Folder = workspace:WaitForChild("procgen")
 local BASE_SEED, HEIGHT_SEED, MOISTURE_SEED
 local seedSet, worldCurrentlyGenerated = false, false
 
+worldgenModule.terrainGenerated = Instance.new("BindableEvent")
+worldgenModule.isTerrainGenerated = false
+
+worldgenModule.poissonDiskGenerated = Instance.new("BindableEvent")
+worldgenModule.isPoissonDiskGenerated = false
+
+worldgenModule.treesPlaced = Instance.new("BindableEvent")
+worldgenModule.isTreesPlaced = false
+
 worldgenModule.initialWorldGenerated = Instance.new("BindableEvent")
 worldgenModule.isInitialWorldGenerated = false
 local visNoise = false
@@ -35,7 +44,7 @@ local AMPLITUDE = Globals.worldGen.AMPLITUDE
 -- this will not run if it's too big :sob:
 local INITIAL_SIZE = 10
 if game:GetService("RunService"):IsStudio() then
-	INITIAL_SIZE = 2
+	INITIAL_SIZE = 8
 end
 local CHUNK_SIZE = 32
 local BLOCK_SIZE = 8
@@ -113,7 +122,6 @@ local function getBiome(x, y, z)
 	elseif y >= 180 and moisture >= 0.3 then
 		return "MOUNTAIN_SNOW"
 	elseif y >= 125 then
-		print(moisture)
 		return "MOUNTAIN"
 	elseif moisture >= 0.3 then
 		return "FOREST"
@@ -157,7 +165,6 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 
 			local blockHeight = getBlockHeight(realX, realZ)
 			local biome = getBiome(realX, blockHeight, realZ)
-
 			local block = blockTable[biome]:Clone()
 
 			block.Name = i .. " " .. j
@@ -174,10 +181,11 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 	end
 
 	-- block rendering is done, yield
-	task.wait()
+	coroutine.yield("BLOCKS")
 
 	-- generate trees using a Poisson disk
 	local poisson = poissonDisk(CHUNK_SIZE, CHUNK_SIZE, 2, 5)
+	coroutine.yield("POISSON")
 
 	for _, value: Vector2 in ipairs(poisson) do
 		local roundedValues = {
@@ -199,8 +207,6 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 			local tree: Model = ReplicatedStorage.BasicTree:Clone()
 			tree:PivotTo(CFrame.new(treePosition))
 			tree.Parent = worldgenFolder.trees
-
-			print(treePosition)
 		end
 	end
 
@@ -250,18 +256,55 @@ function worldgenModule.drawInitialTerrain(size)
 	end
 	visNoise = Flags.getFlag("VisualizeNoise")
 	generatingThread = task.spawn(function()
+		local coroutines = {}
 		for i = -size, size do
+			coroutines[i] = {}
 			for j = -size, size do
-				task.spawn(worldgenModule.generateChunk, i, j)
+				coroutines[i][j] = coroutine.create(worldgenModule.generateChunk)
 			end
 		end
 
+		local terrainExecutionTime = os.clock()
+		print("coroutines created, running")
+		for i = -size, size do
+			for j = -size, size do
+				coroutine.resume(coroutines[i][j], i, j)
+			end
+		end
+		task.wait()
+
+		worldgenModule.isTerrainGenerated = true
+		worldgenModule.terrainGenerated:Fire()
+		local poissonGenerationTime = os.clock()
+		print("terrain done in ", poissonGenerationTime - terrainExecutionTime)
+		for i = -size, size do
+			for j = -size, size do
+				coroutine.resume(coroutines[i][j])
+			end
+		end
+		task.wait()
+
+		worldgenModule.isPoissonDiskGenerated = true
+		worldgenModule.poissonDiskGenerated:Fire()
+		local treeGenerationTime = os.clock()
+		print("poisson done in", treeGenerationTime - poissonGenerationTime)
+		for i = -size, size do
+			for j = -size, size do
+				coroutine.resume(coroutines[i][j])
+			end
+		end
+		task.wait()
+
+		worldgenModule.isTreesPlaced = true
+		worldgenModule.treesPlaced:Fire()
+		print("trees done in", os.clock() - treeGenerationTime)
 		local water: Part = ReplicatedStorage.Water
 
 		water.CFrame = CFrame.new(0, REAL_SEA_LEVEL, 0)
 		water.Size = Vector3.new(10, REAL_SEA_LEVEL, 10)
 
 		worldgenModule.generateWater(10, 10)
+		print("swimmable area done")
 
 		worldCurrentlyGenerated = true
 		worldgenModule.initialWorldGenerated:Fire()

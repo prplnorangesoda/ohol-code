@@ -196,7 +196,6 @@ function poisson_points_list(width, height, mindist, add_points)
 	for _, v in pairs(data) do
 		table.insert(str, Vector2.new(v.x, v.y))
 	end
-	print(str)
 	return str
 end
 

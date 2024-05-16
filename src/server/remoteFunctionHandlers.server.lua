@@ -7,3 +7,7 @@ local remoteFunctions = ReplicatedStorage.Shared.remotes.funcs
 remoteFunctions.IsServerLoaded.OnServerInvoke = function()
 	return loadStateModule.isServerLoaded()
 end
+
+remoteFunctions.ServerLoadedState.OnServerInvoke = function()
+	return loadStateModule.getLoadState()
+end
