@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
-local Flags = require(game.ReplicatedStorage.Shared.gameFlags)
 local Globals = require(game.ReplicatedStorage.Shared.gameGlobals)
 local poissonDisk = require(script.Parent.poissondisk)
 local worldgenModule = {}
@@ -21,7 +20,6 @@ worldgenModule.isTreesPlaced = false
 
 worldgenModule.initialWorldGenerated = Instance.new("BindableEvent")
 worldgenModule.isInitialWorldGenerated = false
-local visNoise = false
 
 ---Set the seed used by the world generator.
 ---@param seed number|nil The seed to set. If left blank, will be randomly generated.
@@ -158,24 +156,36 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 	local zOffset = CHUNK_SIZE * zChunkCoord
 	chunkFolder.Name = "chunk (" .. xChunkCoord .. ", " .. zChunkCoord .. ")"
 	chunkFolder.Parent = worldgenFolder
+	type blockInfo = {
+		position: Vector3,
+		biome: string,
+	}
+	local blockInfo2d: { { blockInfo } } = {}
 	for i = 1, CHUNK_SIZE do
 		local realX = i + xOffset
+		blockInfo2d[i] = {}
 		for j = 1, CHUNK_SIZE do
 			local realZ = j + zOffset
 
 			local blockHeight = getBlockHeight(realX, realZ)
 			local biome = getBiome(realX, blockHeight, realZ)
-			local block = blockTable[biome]:Clone()
+			blockInfo2d[i][j] = {
+				position = Vector3.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE),
+				biome = biome,
+			}
+		end
+	end
+
+	coroutine.yield("BLOCKSPOS")
+
+	for i, table in ipairs(blockInfo2d) do
+		for j, blockInfo in ipairs(table) do
+			local block = blockTable[blockInfo.biome]:Clone()
 
 			block.Name = i .. " " .. j
 
-			if visNoise then
-				block.CFrame = CFrame.new(realX * BLOCK_SIZE, 50, realZ * BLOCK_SIZE)
-				local colorValue = getHeight(realX, realZ)
-				block.Color = Color3.fromHSV(0, 0, colorValue)
-			else
-				block.CFrame = CFrame.new(realX * BLOCK_SIZE, blockHeight, realZ * BLOCK_SIZE)
-			end
+			block.CFrame = CFrame.new(blockInfo.position)
+
 			block.Parent = chunkFolder
 		end
 	end
@@ -254,7 +264,6 @@ function worldgenModule.drawInitialTerrain(size)
 	if worldCurrentlyGenerated then
 		warn("World is already generated. Possible double run?")
 	end
-	visNoise = Flags.getFlag("VisualizeNoise")
 	generatingThread = task.spawn(function()
 		local coroutines = {}
 		for i = -size, size do
@@ -263,7 +272,7 @@ function worldgenModule.drawInitialTerrain(size)
 				coroutines[i][j] = coroutine.create(worldgenModule.generateChunk)
 			end
 		end
-
+		task.wait()
 		local terrainExecutionTime = os.clock()
 		print("coroutines created, running")
 		for i = -size, size do
@@ -272,7 +281,13 @@ function worldgenModule.drawInitialTerrain(size)
 			end
 		end
 		task.wait()
-
+		print("terrain positions done")
+		for i = -size, size do
+			for j = -size, size do
+				coroutine.resume(coroutines[i][j], i, j)
+			end
+		end
+		task.wait()
 		worldgenModule.isTerrainGenerated = true
 		worldgenModule.terrainGenerated:Fire()
 		local poissonGenerationTime = os.clock()

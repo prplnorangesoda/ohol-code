@@ -29,23 +29,23 @@ local function textForLoadingState(loadingState)
 end
 
 LoadingGui.Destroying:Once(function()
-	task.wait(1)
+	task.wait(0.5)
 	local loadbarFadeout = TweenService:Create(background.ChangingUI, TweenInfo.new(2), { GroupTransparency = 1 })
 	loadbarFadeout:Play()
 	local isServerLoaded = ReplicatedStorage.Shared.remotes.funcs.IsServerLoaded:InvokeServer()
-	if loadbarFadeout.PlaybackState ~= Enum.PlaybackState.Completed then
-		loadbarFadeout.Completed:Wait()
-	end
 	if not isServerLoaded then
 		local serverLoadedState = ReplicatedStorage.Shared.remotes.funcs.ServerLoadedState:InvokeServer()
 		ServerLoadingText.Text = textForLoadingState(serverLoadedState)
+		if loadbarFadeout.PlaybackState ~= Enum.PlaybackState.Completed then
+			loadbarFadeout.Completed:Wait()
+		end
 		ServerLoadingText.Visible = true
 		ReplicatedStorage.Shared.remotes.LoadStateChanged.OnClientEvent:Connect(function(state)
 			ServerLoadingText.Text = textForLoadingState(state)
 		end)
+		ReplicatedStorage.Shared.remotes.ServerLoaded.OnClientEvent:Wait()
 	end
 
-	ReplicatedStorage.Shared.remotes.ServerLoaded.OnClientEvent:Wait()
 	ServerLoadingText.Visible = false
 
 	-- currently waiting
