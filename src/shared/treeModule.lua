@@ -30,11 +30,14 @@ treeModule.createTreeFrom = function(tree: Model, foodType: string)
 			newFruit.Parent = tree
 			newFruit.PrimaryPart.Anchored = true
 			newFruit.PrimaryPart:PivotTo(leaves.CFrame + determineSpawningLocationInLeavesRandomly(leaves.Size))
-			newFruit.Changed:Connect(function(prop)
+			local unAnchor = newFruit.Changed:Connect(function(prop)
 				if prop == "Parent" then
 					fruitSpawned -= 1
 					newFruit.PrimaryPart.Anchored = false
 				end
+			end)
+			newFruit.Destroying:Once(function()
+				unAnchor:Disconnect()
 			end)
 		end
 	end)
