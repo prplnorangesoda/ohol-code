@@ -173,6 +173,9 @@ function worldgenModule.generateChunk(xChunkCoord: number, zChunkCoord: number)
 		end
 	end
 
+	-- block rendering is done, yield
+	task.wait()
+
 	-- generate trees using a Poisson disk
 	local poisson = poissonDisk(CHUNK_SIZE, CHUNK_SIZE, 2, 5)
 
